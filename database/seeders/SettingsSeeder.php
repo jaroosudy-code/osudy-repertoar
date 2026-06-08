@@ -10,6 +10,6 @@ class SettingsSeeder extends Seeder
 {
     public function run(): void
     {
-        Setting::set('site_password', Hash::make('osudy2024'));
+        Setting::set('site_password', Hash::make('Konka14072014'));
     }
 }
