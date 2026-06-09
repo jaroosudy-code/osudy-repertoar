@@ -53,6 +53,7 @@
                     <th class="text-left px-4 py-3 font-semibold text-slate-600">Názov</th>
                     <th class="col-desktop text-left px-4 py-3 font-semibold text-slate-600">Čas</th>
                     <th class="text-left px-4 py-3 font-semibold text-slate-600">Tempo</th>
+                    <th class="col-desktop text-left px-4 py-3 font-semibold text-slate-600">BPM</th>
                     <th class="col-desktop text-left px-4 py-3 font-semibold text-slate-600">Typ</th>
                     <th class="text-right px-4 py-3 font-semibold text-slate-600"></th>
                 </tr>
@@ -78,6 +79,7 @@
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Pomalá</span>
                         @endif
                     </td>
+                    <td class="col-desktop px-4 py-3 text-slate-600 font-mono">{{ $song->bpm ?? '' }}</td>
                     <td class="col-desktop px-4 py-3">
                         @if($song->type === 'own')
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Osudy</span>

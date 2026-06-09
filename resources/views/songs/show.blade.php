@@ -58,7 +58,7 @@
     </span>
 </div>
 
-<div class="max-w-3xl mx-auto">
+<div>
 
     {{-- Header --}}
     <div class="flex items-center gap-3 mb-4 no-print">

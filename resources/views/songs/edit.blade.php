@@ -2,7 +2,7 @@
 @section('title', 'Upraviť pieseň')
 
 @section('content')
-<div class="max-w-xl mx-auto">
+<div>
     <div class="flex items-center gap-3 mb-6">
         <a href="{{ route('songs.index') }}" class="text-slate-400 hover:text-slate-600">← Späť</a>
         <h1 class="text-2xl font-bold text-slate-800">Upraviť pieseň</h1>
@@ -31,6 +31,7 @@
                 @include('songs._color_palette', ['currentColor' => old('color', $song->color)])
             </div>
 
+            <div class="grid sm:grid-cols-3 gap-4">
             <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">Tempo *</label>
                 <div class="flex gap-4">
@@ -71,6 +72,14 @@
                 </div>
             </div>
 
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">BPM</label>
+                <input type="number" name="bpm" value="{{ old('bpm', $song->bpm) }}" min="20" max="300"
+                       class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono"
+                       placeholder="napr. 120">
+            </div>
+            </div>{{-- /grid tempo+typ+bpm --}}
+
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Autor textu</label>
@@ -82,12 +91,6 @@
                     <input type="text" name="author_music" value="{{ old('author_music', $song->author_music) }}"
                            class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
                 </div>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Poznámky</label>
-                <textarea name="notes" rows="2"
-                          class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">{{ old('notes', $song->notes) }}</textarea>
             </div>
 
             <div>

@@ -1,14 +1,20 @@
 {{-- Farebná paleta – vkladá sa do formulára piesne --}}
 <div x-data="colorPalette()" x-init="load()" class="space-y-3">
 
-    {{-- Color picker + aktuálna farba --}}
+    {{-- Color picker + názov + uložiť --}}
     <div class="flex items-center gap-3">
         <input type="color" name="color" id="color-input"
                value="{{ $currentColor ?? '#6366f1' }}"
-               class="h-10 w-16 rounded border border-slate-300 cursor-pointer"
+               class="h-10 w-16 rounded border border-slate-300 cursor-pointer shrink-0"
                x-model="current">
-        <span class="text-sm text-slate-500">Klikni pre výber farby</span>
+        <input type="text" x-model="newName" placeholder="Názov farby"
+               class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 flex-1 min-w-0">
+        <button type="button" @click="saveColor()"
+                class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg transition-colors whitespace-nowrap shrink-0">
+            Uložiť farbu
+        </button>
     </div>
+    <p x-show="msg" x-text="msg" class="text-xs text-green-600 -mt-1"></p>
 
     {{-- Uložené farby --}}
     <div>
@@ -39,16 +45,6 @@
         </div>
     </div>
 
-    {{-- Uložiť aktuálnu farbu --}}
-    <div class="flex gap-2 items-center pt-1">
-        <input type="text" x-model="newName" placeholder="Názov farby"
-               class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 flex-1">
-        <button type="button" @click="saveColor()"
-                class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg transition-colors whitespace-nowrap">
-            Uložiť farbu
-        </button>
-    </div>
-    <p x-show="msg" x-text="msg" class="text-xs text-green-600"></p>
 </div>
 
 <script>
