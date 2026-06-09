@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Song extends Model
 {
-    protected $fillable = ['name', 'duration_seconds', 'color', 'tempo', 'type', 'notes', 'author_lyrics', 'author_music', 'original_artist'];
+    protected $fillable = ['name', 'duration_seconds', 'color', 'tempo', 'type', 'notes', 'lyrics', 'author_lyrics', 'author_music', 'original_artist'];
 
     public function getDurationFormattedAttribute(): string
     {

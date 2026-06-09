@@ -17,6 +17,14 @@ class SetlistSongController extends Controller
 
         $roundId = $data['round_id'] ?? null;
 
+        $alreadyExists = SetlistSong::where('setlist_id', $setlist->id)
+            ->where('song_id', $data['song_id'])
+            ->exists();
+
+        if ($alreadyExists) {
+            return response()->json(['error' => 'Táto pieseň je už v playlistе.'], 422);
+        }
+
         $maxPosition = SetlistSong::where('setlist_id', $setlist->id)
             ->where('round_id', $roundId)
             ->max('order_position') ?? -1;

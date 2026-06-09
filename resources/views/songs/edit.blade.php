@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Upravit piesne')
+@section('title', 'Upraviť pieseň')
 
 @section('content')
 <div class="max-w-xl mx-auto">
     <div class="flex items-center gap-3 mb-6">
-        <a href="{{ route('songs.index') }}" class="text-slate-400 hover:text-slate-600">← Spat</a>
-        <h1 class="text-2xl font-bold text-slate-800">Upravit piesne</h1>
+        <a href="{{ route('songs.index') }}" class="text-slate-400 hover:text-slate-600">← Späť</a>
+        <h1 class="text-2xl font-bold text-slate-800">Upraviť pieseň</h1>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
@@ -13,17 +13,17 @@
             @csrf @method('PUT')
 
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Nazov piesne *</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Názov piesne</label>
                 <input type="text" name="name" value="{{ old('name', $song->name) }}" required autofocus
                        class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Dlzka *</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Dĺžka *</label>
                 <input type="text" name="duration_formatted" value="{{ old('duration_formatted', $song->duration_formatted) }}" required
                        class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono"
                        placeholder="3.45  alebo  3,45  alebo  3:45">
-                <p class="text-xs text-slate-400 mt-1">Minúty a sekundy oddel bodkou, ciarkou alebo dvojbodkou</p>
+                <p class="text-xs text-slate-400 mt-1">Minúty a sekundy oddeľ bodkou, čiarkou alebo dvojbodkou</p>
             </div>
 
             <div>
@@ -37,12 +37,12 @@
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="tempo" value="fast" {{ old('tempo', $song->tempo) === 'fast' ? 'checked' : '' }}
                                class="accent-amber-500">
-                        <span class="px-2 py-0.5 rounded-full text-sm bg-orange-100 text-orange-700">Rychla</span>
+                        <span class="px-2 py-0.5 rounded-full text-sm bg-orange-100 text-orange-700">Rýchla</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="tempo" value="slow" {{ old('tempo', $song->tempo) === 'slow' ? 'checked' : '' }}
                                class="accent-amber-500">
-                        <span class="px-2 py-0.5 rounded-full text-sm bg-blue-100 text-blue-700">Pomala</span>
+                        <span class="px-2 py-0.5 rounded-full text-sm bg-blue-100 text-blue-700">Pomalá</span>
                     </label>
                 </div>
             </div>
@@ -85,19 +85,26 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Poznamky</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Poznámky</label>
                 <textarea name="notes" rows="2"
                           class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">{{ old('notes', $song->notes) }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Text s akordmi</label>
+                <p class="text-xs text-slate-400 mb-2">Akordy vkladaj priamo do textu vo formáte <code class="bg-slate-100 px-1 rounded">&lt;E&gt;</code> <code class="bg-slate-100 px-1 rounded">&lt;F#mi&gt;</code> <code class="bg-slate-100 px-1 rounded">&lt;H7&gt;</code></p>
+                <textarea name="lyrics" rows="12"
+                          class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono text-sm">{{ old('lyrics', $song->lyrics) }}</textarea>
             </div>
 
             <div class="flex gap-3 pt-2">
                 <button type="submit"
                         class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-5 py-2 rounded-lg transition-colors">
-                    Ulozit zmeny
+                    Uložiť zmeny
                 </button>
-                <a href="{{ route('songs.index') }}"
+                <a href="{{ route('songs.show', $song) }}"
                    class="px-5 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors">
-                    Zrusit
+                    Zrušiť
                 </a>
             </div>
         </form>

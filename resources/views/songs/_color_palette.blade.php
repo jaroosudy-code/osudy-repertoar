@@ -41,7 +41,7 @@
 
     {{-- Uložiť aktuálnu farbu --}}
     <div class="flex gap-2 items-center pt-1">
-        <input type="text" x-model="newName" placeholder="Názov farby (napr. Modrá)"
+        <input type="text" x-model="newName" placeholder="Názov farby"
                class="border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 flex-1">
         <button type="button" @click="saveColor()"
                 class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg transition-colors whitespace-nowrap">

@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Nový setlist')
+@section('title', 'Nový playlist')
 
 @section('content')
 <div class="max-w-lg mx-auto">
     <div class="flex items-center gap-3 mb-6">
         <a href="{{ route('setlists.index') }}" class="text-slate-400 hover:text-slate-600">← Späť</a>
-        <h1 class="text-2xl font-bold text-slate-800">Nový setlist</h1>
+        <h1 class="text-2xl font-bold text-slate-800">Nový playlist</h1>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
@@ -13,10 +13,10 @@
             @csrf
 
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Názov setlistu *</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Názov playlistu *</label>
                 <input type="text" name="name" value="{{ old('name') }}" required autofocus
                        class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                       placeholder="napr. Svadba Novákových 2024">
+                       placeholder="">
             </div>
 
             <div>
@@ -61,7 +61,7 @@
             <div class="flex gap-3 pt-2">
                 <button type="submit"
                         class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-5 py-2 rounded-lg transition-colors">
-                    Vytvoriť setlist
+                    Vytvoriť playlist
                 </button>
                 <a href="{{ route('setlists.index') }}"
                    class="px-5 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 transition-colors">

@@ -32,9 +32,16 @@ class SongController extends Controller
             'tempo'              => 'required|in:fast,slow',
             'type'               => 'required|in:own,cover',
             'notes'              => 'nullable|string',
+            'lyrics'             => 'nullable|string',
             'author_lyrics'      => 'nullable|string|max:255',
             'author_music'       => 'nullable|string|max:255',
             'original_artist'    => 'nullable|string|max:255',
+        ], [
+            'name.required'               => 'Názov piesne je povinný.',
+            'duration_formatted.required' => 'Dĺžka piesne je povinná.',
+            'duration_formatted.regex'    => 'Neplatný formát dĺžky – zadaj napr. 3:45.',
+            'tempo.required'              => 'Vyberte tempo piesne.',
+            'type.required'               => 'Vyberte typ piesne.',
         ]);
 
         [$m, $s] = explode(':', $data['duration_formatted']);
@@ -45,12 +52,18 @@ class SongController extends Controller
             'tempo'            => $data['tempo'],
             'type'             => $data['type'],
             'notes'            => $data['notes'] ?? null,
+            'lyrics'           => $data['lyrics'] ?? null,
             'author_lyrics'    => $data['author_lyrics'] ?? null,
             'author_music'     => $data['author_music'] ?? null,
             'original_artist'  => $data['type'] === 'cover' ? ($data['original_artist'] ?? null) : null,
         ]);
 
         return redirect()->route('songs.index')->with('success', 'Piesne "' . $song->name . '" bola pridana.');
+    }
+
+    public function show(Song $song)
+    {
+        return view('songs.show', compact('song'));
     }
 
     public function edit(Song $song)
@@ -71,9 +84,16 @@ class SongController extends Controller
             'tempo'              => 'required|in:fast,slow',
             'type'               => 'required|in:own,cover',
             'notes'              => 'nullable|string',
+            'lyrics'             => 'nullable|string',
             'author_lyrics'      => 'nullable|string|max:255',
             'author_music'       => 'nullable|string|max:255',
             'original_artist'    => 'nullable|string|max:255',
+        ], [
+            'name.required'               => 'Názov piesne je povinný.',
+            'duration_formatted.required' => 'Dĺžka piesne je povinná.',
+            'duration_formatted.regex'    => 'Neplatný formát dĺžky – zadaj napr. 3:45.',
+            'tempo.required'              => 'Vyberte tempo piesne.',
+            'type.required'               => 'Vyberte typ piesne.',
         ]);
 
         [$m, $s] = explode(':', $data['duration_formatted']);
@@ -84,6 +104,7 @@ class SongController extends Controller
             'tempo'            => $data['tempo'],
             'type'             => $data['type'],
             'notes'            => $data['notes'] ?? null,
+            'lyrics'           => $data['lyrics'] ?? null,
             'author_lyrics'    => $data['author_lyrics'] ?? null,
             'author_music'     => $data['author_music'] ?? null,
             'original_artist'  => $data['type'] === 'cover' ? ($data['original_artist'] ?? null) : null,

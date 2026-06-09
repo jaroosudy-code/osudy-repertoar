@@ -292,6 +292,10 @@ function initDropZone(zone) {
 
             apiPost(`/setlists/${SETLIST_ID}/songs`, { song_id: parseInt(songId), round_id: roundId ? parseInt(roundId) : null })
                 .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
                     if (data.id) {
                         const el = buildEntryEl(data);
                         zone.appendChild(el);

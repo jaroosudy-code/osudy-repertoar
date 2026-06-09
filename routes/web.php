@@ -20,6 +20,7 @@ Route::middleware(\App\Http\Middleware\RequireSitePassword::class)->group(functi
     Route::get('/', fn() => redirect()->route('songs.index'));
 
     Route::resource('songs', SongController::class)->except(['show']);
+    Route::get('songs/{song}', [SongController::class, 'show'])->name('songs.show');
 
     Route::get('colors', [ColorController::class, 'index'])->name('colors.index');
     Route::post('colors', [ColorController::class, 'store'])->name('colors.store');
