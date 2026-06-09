@@ -106,9 +106,9 @@
                             <span class="flex-1 text-sm font-medium text-slate-700 truncate">{{ $entry->song->name }}</span>
                             <span class="text-xs font-mono text-slate-400 shrink-0">{{ $entry->song->duration_formatted }}</span>
                             @if($entry->song->tempo === 'fast')
-                                <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">⚡</span>
+                                <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">⚡</span>
                             @else
-                                <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">🌊</span>
+                                <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">🌊</span>
                             @endif
                             <button onclick="removeEntry({{ $entry->id }}, this)"
                                     class="text-slate-300 hover:text-red-500 transition-colors ml-1 text-lg leading-none shrink-0">×</button>
@@ -164,9 +164,9 @@
                         <span class="flex-1 text-sm font-medium text-slate-700 truncate">{{ $entry->song->name }}</span>
                         <span class="text-xs font-mono text-slate-400 shrink-0">{{ $entry->song->duration_formatted }}</span>
                         @if($entry->song->tempo === 'fast')
-                            <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">⚡</span>
+                            <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">⚡</span>
                         @else
-                            <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">🌊</span>
+                            <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">🌊</span>
                         @endif
                         <button onclick="removeEntry({{ $entry->id }}, this)"
                                 class="text-slate-300 hover:text-red-500 transition-colors ml-1 text-lg leading-none shrink-0">×</button>
@@ -257,7 +257,7 @@ function buildEntryEl(data) {
         <span class="inline-block w-3 h-3 rounded-full shrink-0 border border-slate-300" style="background-color:${data.color}"></span>
         <span class="flex-1 text-sm font-medium text-slate-700 truncate">${data.name}</span>
         <span class="text-xs font-mono text-slate-400 shrink-0">${data.duration_formatted}</span>
-        <span class="text-xs px-1.5 py-0.5 rounded ${data.tempo==='fast'?'bg-orange-100 text-orange-600':'bg-blue-100 text-blue-600'}">${data.tempo==='fast'?'⚡':'🌊'}</span>
+        <span class="text-xs px-1.5 py-0.5 rounded ${data.tempo==='fast'?'bg-blue-100 text-blue-600':'bg-orange-100 text-orange-600'}">${data.tempo==='fast'?'⚡':'🌊'}</span>
         <button onclick="removeEntry(${data.id},this)" class="text-slate-300 hover:text-red-500 transition-colors ml-1 text-lg leading-none shrink-0">×</button>
     `;
     return div;

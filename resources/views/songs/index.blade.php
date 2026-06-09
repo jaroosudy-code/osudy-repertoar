@@ -74,9 +74,9 @@
                     <td class="col-desktop px-4 py-3 text-slate-600 font-mono">{{ $song->duration_formatted }}</td>
                     <td class="px-4 py-3">
                         @if($song->tempo === 'fast')
-                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">Rýchla</span>
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Rýchla</span>
                         @else
-                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Pomalá</span>
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">Pomalá</span>
                         @endif
                     </td>
                     <td class="col-desktop px-4 py-3 text-slate-600 font-mono">{{ $song->bpm ?? '' }}</td>

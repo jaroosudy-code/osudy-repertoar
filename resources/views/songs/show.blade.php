@@ -80,9 +80,9 @@
     <div class="flex flex-wrap gap-3 mb-6 text-sm text-slate-500 no-print">
         <span class="font-mono font-medium text-slate-700">{{ $song->duration_formatted }}</span>
         @if($song->tempo === 'fast')
-            <span class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Rýchla</span>
+            <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Rýchla</span>
         @else
-            <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Pomalá</span>
+            <span class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">Pomalá</span>
         @endif
         @if($song->type === 'own')
             <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700">Osudy</span>

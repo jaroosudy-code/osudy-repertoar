@@ -38,12 +38,12 @@
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="tempo" value="fast" {{ old('tempo', $song->tempo) === 'fast' ? 'checked' : '' }}
                                class="accent-amber-500">
-                        <span class="px-2 py-0.5 rounded-full text-sm bg-orange-100 text-orange-700">Rýchla</span>
+                        <span class="px-2 py-0.5 rounded-full text-sm bg-blue-100 text-blue-700">Rýchla</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="tempo" value="slow" {{ old('tempo', $song->tempo) === 'slow' ? 'checked' : '' }}
                                class="accent-amber-500">
-                        <span class="px-2 py-0.5 rounded-full text-sm bg-blue-100 text-blue-700">Pomalá</span>
+                        <span class="px-2 py-0.5 rounded-full text-sm bg-orange-100 text-orange-700">Pomalá</span>
                     </label>
                 </div>
             </div>
