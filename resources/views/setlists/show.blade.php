@@ -28,6 +28,7 @@
 {{-- Two-column layout --}}
 <div class="flex gap-4 h-[calc(100vh-160px)]">
 
+@if($canEdit)
     {{-- LEFT: Song Library --}}
     <div class="w-72 shrink-0 flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="p-3 border-b border-slate-200 bg-slate-50">
@@ -63,6 +64,7 @@
             @endforeach
         </div>
     </div>
+@endif
 
     {{-- RIGHT: Setlist Builder --}}
     <div class="flex-1 flex flex-col overflow-hidden">
@@ -84,49 +86,55 @@
                 <div class="round-block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
                      data-round-id="{{ $round->id }}">
                     <div class="flex items-center gap-3 px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-                        <span class="drag-round-handle cursor-grab text-slate-400 hover:text-slate-600 text-xl">⠿</span>
+                        @if($canEdit)<span class="drag-round-handle cursor-grab text-slate-400 hover:text-slate-600 text-xl">⠿</span>@endif
                         <span class="round-name font-semibold text-slate-700 flex-1"
-                              contenteditable="true"
+                              {{ $canEdit ? 'contenteditable=true' : '' }}
                               data-round-id="{{ $round->id }}">{{ $round->name }}</span>
                         <span class="round-time font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">0:00:00</span>
+                        @if($canEdit)
                         <button onclick="deleteRound({{ $round->id }}, this)"
                                 class="text-slate-400 hover:text-red-500 transition-colors ml-2 text-lg leading-none"
                                 title="Zmazať kolo">×</button>
+                        @endif
                     </div>
-                    <div class="songs-drop-zone p-2 min-h-[60px] space-y-1"
+                    <div class="{{ $canEdit ? 'songs-drop-zone' : '' }} p-2 min-h-[60px] space-y-1"
                          data-round-id="{{ $round->id }}"
                          data-setlist-id="{{ $setlist->id }}">
                         @foreach($round->setlistSongs as $entry)
-                        <div class="song-entry flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:border-slate-300 bg-white cursor-grab active:cursor-grabbing select-none"
+                        <div class="song-entry flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white {{ $canEdit ? 'cursor-grab active:cursor-grabbing' : '' }} select-none"
                              data-entry-id="{{ $entry->id }}"
                              data-duration="{{ $entry->song->duration_seconds }}">
-                            <span class="drag-handle text-slate-300 hover:text-slate-500 cursor-grab text-lg">⠿</span>
+                            @if($canEdit)<span class="drag-handle text-slate-300 hover:text-slate-500 cursor-grab text-lg">⠿</span>@endif
                             <span class="inline-block w-3 h-3 rounded-full shrink-0 border border-slate-300"
                                   style="background-color: {{ $entry->song->color }}"></span>
-                            <span class="flex-1 text-sm font-medium text-slate-700 truncate">{{ $entry->song->name }}</span>
+                            <a href="{{ route('songs.show', $entry->song) }}" class="flex-1 text-sm font-medium text-slate-700 truncate hover:text-amber-600">{{ $entry->song->name }}</a>
                             <span class="text-xs font-mono text-slate-400 shrink-0">{{ $entry->song->duration_formatted }}</span>
                             @if($entry->song->tempo === 'fast')
                                 <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">⚡</span>
                             @else
                                 <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">🌊</span>
                             @endif
+                            @if($canEdit)
                             <button onclick="removeEntry({{ $entry->id }}, this)"
                                     class="text-slate-300 hover:text-red-500 transition-colors ml-1 text-lg leading-none shrink-0">×</button>
+                            @endif
                         </div>
                         @endforeach
-                        @if($round->setlistSongs->isEmpty())
+                        @if($round->setlistSongs->isEmpty() && $canEdit)
                         <div class="drop-hint text-center text-slate-300 py-4 text-sm select-none pointer-events-none">
                             Pretiahnite sem piesne z knižnice
                         </div>
                         @endif
                     </div>
                     <div class="flex items-center gap-3 px-4 py-2 bg-slate-50 border-t border-slate-100">
+                        @if($canEdit)
                         <span class="text-xs text-slate-400">Prestávka po kole:</span>
                         <input type="number" min="0" max="120" value="{{ $round->break_after_minutes }}"
                                class="w-14 border border-slate-300 rounded px-2 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-amber-400"
                                onchange="updateBreak({{ $round->id }}, this.value)">
                         <span class="text-xs text-slate-400">min</span>
-                        <span class="break-badge ml-1 text-xs text-pink-600 font-medium"
+                        @endif
+                        <span class="break-badge {{ $canEdit ? 'ml-1' : '' }} text-xs text-pink-600 font-medium"
                               style="{{ $round->break_after_minutes > 0 ? '' : 'display:none' }}">
                             ☕ {{ $round->break_after_minutes }} min prestávka
                         </span>
@@ -135,10 +143,12 @@
                 @endforeach
             </div>
 
+            @if($canEdit)
             <button onclick="addRound()"
                     class="w-full border-2 border-dashed border-slate-300 hover:border-amber-400 text-slate-400 hover:text-amber-500 rounded-xl py-3 text-sm font-medium transition-colors">
                 + Pridať kolo
             </button>
+            @endif
 
         @else
             {{-- CONCERT: single flat list --}}
@@ -151,31 +161,35 @@
                 <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
                     <span class="font-semibold text-slate-700">Program koncertu</span>
                 </div>
-                <div class="songs-drop-zone p-2 min-h-[120px] space-y-1"
+                <div class="{{ $canEdit ? 'songs-drop-zone' : '' }} p-2 min-h-[120px] space-y-1"
                      data-round-id=""
                      data-setlist-id="{{ $setlist->id }}">
                     @foreach($entries ?? [] as $entry)
-                    <div class="song-entry flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:border-slate-300 bg-white cursor-grab active:cursor-grabbing select-none"
+                    <div class="song-entry flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white {{ $canEdit ? 'cursor-grab active:cursor-grabbing hover:border-slate-300' : '' }} select-none"
                          data-entry-id="{{ $entry->id }}"
                          data-duration="{{ $entry->song->duration_seconds }}">
-                        <span class="drag-handle text-slate-300 hover:text-slate-500 cursor-grab text-lg">⠿</span>
+                        @if($canEdit)<span class="drag-handle text-slate-300 hover:text-slate-500 cursor-grab text-lg">⠿</span>@endif
                         <span class="inline-block w-3 h-3 rounded-full shrink-0 border border-slate-300"
                               style="background-color: {{ $entry->song->color }}"></span>
-                        <span class="flex-1 text-sm font-medium text-slate-700 truncate">{{ $entry->song->name }}</span>
+                        <a href="{{ route('songs.show', $entry->song) }}" class="flex-1 text-sm font-medium text-slate-700 truncate hover:text-amber-600">{{ $entry->song->name }}</a>
                         <span class="text-xs font-mono text-slate-400 shrink-0">{{ $entry->song->duration_formatted }}</span>
                         @if($entry->song->tempo === 'fast')
                             <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">⚡</span>
                         @else
                             <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">🌊</span>
                         @endif
+                        @if($canEdit)
                         <button onclick="removeEntry({{ $entry->id }}, this)"
                                 class="text-slate-300 hover:text-red-500 transition-colors ml-1 text-lg leading-none shrink-0">×</button>
+                        @endif
                     </div>
                     @endforeach
+                    @if($canEdit)
                     <div class="drop-hint text-center text-slate-300 py-4 text-sm select-none pointer-events-none"
                          {{ isset($entries) && $entries->isNotEmpty() ? 'style=display:none' : '' }}>
                         Pretiahnite sem piesne z knižnice
                     </div>
+                    @endif
                 </div>
             </div>
         @endif
@@ -189,6 +203,7 @@
 const SETLIST_ID = {{ $setlist->id }};
 const CSRF = '{{ $csrfToken }}';
 const IS_ENTERTAINMENT = {{ $isEntertainment ? 'true' : 'false' }};
+const CAN_EDIT = {{ $canEdit ? 'true' : 'false' }};
 
 function fmtTime(s) {
     const h = Math.floor(s / 3600);
@@ -318,16 +333,20 @@ function initDropZone(zone) {
     });
 }
 
-// Initialize library as clone-source
-Sortable.create(document.getElementById('song-library'), {
-    group: { name: 'songs', pull: 'clone', put: false },
-    sort: false,
-    animation: 150,
-    ghostClass: 'opacity-40',
-});
+// Initialize library as clone-source (only when canEdit)
+if (CAN_EDIT && document.getElementById('song-library')) {
+    Sortable.create(document.getElementById('song-library'), {
+        group: { name: 'songs', pull: 'clone', put: false },
+        sort: false,
+        animation: 150,
+        ghostClass: 'opacity-40',
+    });
+}
 
-// Initialize all drop zones
-document.querySelectorAll('.songs-drop-zone').forEach(initDropZone);
+// Initialize all drop zones (only when canEdit)
+if (CAN_EDIT) {
+    document.querySelectorAll('.songs-drop-zone').forEach(initDropZone);
+}
 
 // Remove entry
 async function removeEntry(entryId, btn) {

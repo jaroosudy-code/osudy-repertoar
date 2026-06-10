@@ -2,37 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     public function showLogin()
     {
-        if (session('site_authenticated')) {
-            return redirect()->route('songs.index');
-        }
+        if (auth()->check()) return redirect()->route('songs.index');
         return view('auth.login');
     }
 
     public function login(Request $request)
     {
-        $request->validate(['password' => 'required']);
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required',
+        ], [
+            'email.required'    => 'Zadaj emailovú adresu.',
+            'email.email'       => 'Neplatný formát emailu.',
+            'password.required' => 'Zadaj heslo.',
+        ]);
 
-        $hash = Setting::get('site_password');
-
-        if ($hash && Hash::check($request->password, $hash)) {
-            $request->session()->put('site_authenticated', true);
+        if (Auth::attempt(
+            ['email' => $request->email, 'password' => $request->password],
+            $request->boolean('remember')
+        )) {
+            $request->session()->regenerate();
             return redirect()->intended(route('songs.index'));
         }
 
-        return back()->withErrors(['password' => 'Nespravne heslo.']);
+        return back()
+            ->withErrors(['email' => 'Nesprávny email alebo heslo.'])
+            ->withInput($request->only('email'));
     }
 
     public function logout(Request $request)
     {
-        $request->session()->forget('site_authenticated');
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('login');
     }
 
@@ -41,21 +51,32 @@ class AuthController extends Controller
         return view('auth.settings');
     }
 
+    public function toggleInvisible(Request $request)
+    {
+        $user = auth()->user();
+        $user->update(['is_invisible' => !$user->is_invisible]);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['is_invisible' => $user->is_invisible]);
+        }
+        return back()->with('success', $user->is_invisible ? 'Neviditeľný režim zapnutý.' : 'Neviditeľný režim vypnutý.');
+    }
+
     public function updatePassword(Request $request)
     {
         $request->validate([
             'current_password' => 'required',
             'new_password'     => 'required|min:6|confirmed',
+        ], [
+            'new_password.min'       => 'Nové heslo musí mať aspoň 6 znakov.',
+            'new_password.confirmed' => 'Heslá sa nezhodujú.',
         ]);
 
-        $hash = Setting::get('site_password');
-
-        if (!$hash || !Hash::check($request->current_password, $hash)) {
-            return back()->withErrors(['current_password' => 'Aktualne heslo je nespravne.']);
+        if (!Hash::check($request->current_password, auth()->user()->password)) {
+            return back()->withErrors(['current_password' => 'Aktuálne heslo je nesprávne.']);
         }
 
-        Setting::set('site_password', Hash::make($request->new_password));
+        auth()->user()->update(['password' => Hash::make($request->new_password)]);
 
-        return back()->with('success', 'Heslo bolo zmenene. Oznam ho ostatnym clenom kapely.');
+        return back()->with('success', 'Heslo bolo zmenené.');
     }
 }

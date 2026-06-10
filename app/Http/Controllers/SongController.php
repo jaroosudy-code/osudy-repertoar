@@ -15,12 +15,14 @@ class SongController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()->hasPermission('songs.create'), 403, 'Nemáš oprávnenie pridávať piesne.');
         return view('songs.create');
     }
 
     public function store(Request $request)
     {
-        // Normalize time separator: 3.10 or 3,10 → 3:10
+        abort_unless(auth()->user()->hasPermission('songs.create'), 403);
+
         $request->merge([
             'duration_formatted' => str_replace([',', '.'], ':', $request->input('duration_formatted', '')),
         ]);
@@ -60,7 +62,7 @@ class SongController extends Controller
             'original_artist'  => $data['type'] === 'cover' ? ($data['original_artist'] ?? null) : null,
         ]);
 
-        return redirect()->route('songs.index')->with('success', 'Piesne "' . $song->name . '" bola pridana.');
+        return redirect()->route('songs.index')->with('success', 'Pieseň „' . $song->name . '" bola pridaná.');
     }
 
     public function show(Song $song)
@@ -70,11 +72,14 @@ class SongController extends Controller
 
     public function edit(Song $song)
     {
+        abort_unless(auth()->user()->hasPermission('songs.edit'), 403, 'Nemáš oprávnenie upravovať piesne.');
         return view('songs.edit', compact('song'));
     }
 
     public function update(Request $request, Song $song)
     {
+        abort_unless(auth()->user()->hasPermission('songs.edit'), 403);
+
         $request->merge([
             'duration_formatted' => str_replace([',', '.'], ':', $request->input('duration_formatted', '')),
         ]);
@@ -114,13 +119,14 @@ class SongController extends Controller
             'original_artist'  => $data['type'] === 'cover' ? ($data['original_artist'] ?? null) : null,
         ]);
 
-        return redirect()->route('songs.index')->with('success', 'Piesne "' . $song->name . '" bola aktualizovana.');
+        return redirect()->route('songs.index')->with('success', 'Pieseň „' . $song->name . '" bola aktualizovaná.');
     }
 
     public function destroy(Song $song)
     {
+        abort_unless(auth()->user()->hasPermission('songs.delete'), 403, 'Nemáš oprávnenie mazať piesne.');
         $name = $song->name;
         $song->delete();
-        return redirect()->route('songs.index')->with('success', 'Piesne "' . $name . '" bola zmazana.');
+        return redirect()->route('songs.index')->with('success', 'Pieseň „' . $name . '" bola zmazaná.');
     }
 }

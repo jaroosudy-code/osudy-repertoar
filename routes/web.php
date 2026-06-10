@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ChordDiagramController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\ExportController;
@@ -10,13 +12,13 @@ use App\Http\Controllers\SetlistSongController;
 use App\Http\Controllers\SongController;
 use Illuminate\Support\Facades\Route;
 
-// Prihlasenie – bez ochrany hesla
+// Prihlasenie – verejné
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Vsetko ostatne vyzaduje heslo
-Route::middleware(\App\Http\Middleware\RequireSitePassword::class)->group(function () {
+// Všetko ostatné vyžaduje prihlásenie
+Route::middleware('auth')->group(function () {
 
     Route::get('/', fn() => redirect()->route('songs.index'));
 
@@ -45,7 +47,38 @@ Route::middleware(\App\Http\Middleware\RequireSitePassword::class)->group(functi
 
     Route::get('settings', [AuthController::class, 'showSettings'])->name('settings');
     Route::patch('settings/password', [AuthController::class, 'updatePassword'])->name('settings.password');
+    Route::post('settings/invisible', [AuthController::class, 'toggleInvisible'])->name('settings.invisible');
+
+    // Chat
+    Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::post('chat/send', [ChatController::class, 'send'])->name('chat.send');
+    Route::post('chat/read', [ChatController::class, 'markRead'])->name('chat.read');
+    Route::get('api/chat/messages', [ChatController::class, 'messages'])->name('chat.messages');
+    Route::get('api/chat/online', [ChatController::class, 'online'])->name('chat.online');
+    Route::get('api/chat/unread', [ChatController::class, 'unread'])->name('chat.unread');
+    Route::get('api/chat/users', [ChatController::class, 'usersList'])->name('chat.users');
+    Route::get('api/chat/unread-detail', [ChatController::class, 'unreadDetail'])->name('chat.unread-detail');
 
     Route::get('api/chords', [ChordDiagramController::class, 'show'])->name('chords.show');
     Route::post('api/chords', [ChordDiagramController::class, 'upsert'])->name('chords.upsert');
+
+    // Admin panel – len pre adminov
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+
+        // Správa používateľov
+        Route::get('users',             [AdminController::class, 'usersIndex'])->name('users.index');
+        Route::get('users/create',      [AdminController::class, 'usersCreate'])->name('users.create');
+        Route::post('users',            [AdminController::class, 'usersStore'])->name('users.store');
+        Route::get('users/{user}/edit', [AdminController::class, 'usersEdit'])->name('users.edit');
+        Route::patch('users/{user}',    [AdminController::class, 'usersUpdate'])->name('users.update');
+        Route::delete('users/{user}',   [AdminController::class, 'usersDestroy'])->name('users.destroy');
+
+        // Správa rolí
+        Route::get('roles',             [AdminController::class, 'rolesIndex'])->name('roles.index');
+        Route::get('roles/create',      [AdminController::class, 'rolesCreate'])->name('roles.create');
+        Route::post('roles',            [AdminController::class, 'rolesStore'])->name('roles.store');
+        Route::get('roles/{role}/edit', [AdminController::class, 'rolesEdit'])->name('roles.edit');
+        Route::patch('roles/{role}',    [AdminController::class, 'rolesUpdate'])->name('roles.update');
+        Route::delete('roles/{role}',   [AdminController::class, 'rolesDestroy'])->name('roles.destroy');
+    });
 });

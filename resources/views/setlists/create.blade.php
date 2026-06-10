@@ -2,7 +2,7 @@
 @section('title', 'Nový playlist')
 
 @section('content')
-<div class="max-w-lg mx-auto">
+<div>
     <div class="flex items-center gap-3 mb-6">
         <a href="{{ route('setlists.index') }}" class="text-slate-400 hover:text-slate-600">← Späť</a>
         <h1 class="text-2xl font-bold text-slate-800">Nový playlist</h1>

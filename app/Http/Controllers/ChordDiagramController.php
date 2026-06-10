@@ -19,6 +19,8 @@ class ChordDiagramController extends Controller
 
     public function upsert(Request $request): JsonResponse
     {
+        abort_unless(auth()->user()->hasPermission('chords.edit'), 403, 'Nemáš oprávnenie upravovať akordy.');
+
         $data = $request->validate([
             'name'               => 'required|string|max:20',
             'scope'              => 'required|in:song,global',
@@ -43,7 +45,6 @@ class ChordDiagramController extends Controller
                 $chord = ChordDiagram::create(array_merge($attributes, ['song_id' => $data['song_id']]));
             }
         } else {
-            // Global: song_id = null
             $chord = $this->findExact($data['name'], null);
             if ($chord) {
                 $chord->update($attributes + ['song_id' => null]);
@@ -59,7 +60,6 @@ class ChordDiagramController extends Controller
 
     private function find(string $name, ?string $songId): ?ChordDiagram
     {
-        // 1. song-specific exact
         if ($songId) {
             $chord = $this->findExact($name, (int) $songId);
             if ($chord) return $chord;
@@ -71,11 +71,9 @@ class ChordDiagramController extends Controller
             }
         }
 
-        // 2. global exact
         $chord = $this->findExact($name, null);
         if ($chord) return $chord;
 
-        // 3. global normalized
         $norm = $this->normalize($name);
         if ($norm !== $name) {
             return $this->findExact($norm, null);
@@ -93,8 +91,8 @@ class ChordDiagramController extends Controller
 
     private function normalize(string $name): string
     {
-        $name = preg_replace('/mi(\d*)$/', 'm$1', $name);  // "Ami" → "Am"
-        $name = preg_replace('/maj$/', '', $name);          // "Gmaj" → "G"
+        $name = preg_replace('/mi(\d*)$/', 'm$1', $name);
+        $name = preg_replace('/maj$/', '', $name);
         return $name;
     }
 }

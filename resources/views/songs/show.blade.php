@@ -138,9 +138,11 @@
             </label>
             <div id="chord-editor-hint">Klikni na mriežku → nastaví prst 1–4 (ďalší klik vymaže)</div>
         </div>
+        @if(auth()->user()->hasPermission('chords.edit'))
         <div id="chord-actions" class="no-print">
             <button id="btn-edit-chord" onclick="toggleChordEdit()">Upraviť</button>
         </div>
+        @endif
         <div id="chord-save-options" class="no-print" style="display:none;">
             <div style="font-size:0.75rem;color:#94a3b8;text-align:center;margin-bottom:6px;">Uložiť zmeny:</div>
             <div style="display:flex;flex-direction:column;gap:6px;">
@@ -163,10 +165,12 @@
             🖨 Tlačiť
         </button>
         @endif
+        @if(auth()->user()->hasPermission('songs.edit'))
         <a href="{{ route('songs.edit', $song) }}"
            class="px-4 py-1.5 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 text-sm transition-colors">
             Upraviť
         </a>
+        @endif
     </div>
 
     {{-- Info lišta --}}
@@ -225,7 +229,9 @@
     @else
     <div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400">
         <p>Táto pieseň zatiaľ nemá text s akordmi.</p>
+        @if(auth()->user()->hasPermission('songs.edit'))
         <a href="{{ route('songs.edit', $song) }}" class="text-amber-500 hover:underline mt-2 inline-block">Pridať text →</a>
+        @endif
     </div>
     @endif
 
@@ -242,6 +248,7 @@ const SCALE = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','H'];
 let currentOffset = 0;
 const rawLyrics = @json($song->lyrics ?? '');
 const SONG_ID = {{ $song->id }};
+const CAN_EDIT_CHORDS = {{ auth()->user()->hasPermission('chords.edit') ? 'true' : 'false' }};
 
 // ── Transpozícia ─────────────────────────────────────────────────────────────
 function transposeChord(chord, semitones) {
@@ -304,16 +311,16 @@ function showChordPopup(chordName) {
         } else {
             editState = { frets: [0,0,0,0,0,0], fingers: [0,0,0,0,0,0], starting_fret: 1,
                           barre_fret: null, barre_from_string: null, barre_to_string: null };
-            setEditMode(true);
-            renderDiagram(true);
+            if (CAN_EDIT_CHORDS) setEditMode(true);
+            renderDiagram(CAN_EDIT_CHORDS);
         }
         document.getElementById('chord-overlay').classList.add('open');
     })
     .catch(() => {
         editState = { frets: [0,0,0,0,0,0], fingers: [0,0,0,0,0,0], starting_fret: 1,
                       barre_fret: null, barre_from_string: null, barre_to_string: null };
-        setEditMode(true);
-        renderDiagram(true);
+        if (CAN_EDIT_CHORDS) setEditMode(true);
+        renderDiagram(CAN_EDIT_CHORDS);
         document.getElementById('chord-overlay').classList.add('open');
     });
 }

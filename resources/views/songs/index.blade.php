@@ -4,10 +4,12 @@
 @section('content')
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-slate-800">Piesne ({{ $songs->count() }})</h1>
+    @if(auth()->user()->hasPermission('songs.create'))
     <a href="{{ route('songs.create') }}"
-       class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors">
+       class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors text-sm">
         + Pridať pieseň
     </a>
+    @endif
 </div>
 
 <style>
@@ -25,7 +27,11 @@
 @if($songs->isEmpty())
     <div class="text-center py-16 text-slate-400">
         <div class="text-5xl mb-3">🎵</div>
-        <p class="text-lg">Zatiaľ žiadne piesne. <a href="{{ route('songs.create') }}" class="text-amber-500 hover:underline">Pridaj prvú!</a></p>
+        <p class="text-lg">Zatiaľ žiadne piesne.
+            @if(auth()->user()->hasPermission('songs.create'))
+                <a href="{{ route('songs.create') }}" class="text-amber-500 hover:underline">Pridaj prvú!</a>
+            @endif
+        </p>
     </div>
 @else
     {{-- Filters --}}
@@ -93,18 +99,23 @@
                         @endif
                     </td>
                     <td class="px-4 py-3 text-right whitespace-nowrap">
-                        {{-- Desktop: text --}}
+                        @if(auth()->user()->hasPermission('songs.edit'))
+                        {{-- Desktop --}}
                         <a href="{{ route('songs.edit', $song) }}"
                            class="act-desktop text-slate-500 hover:text-amber-600 font-medium mr-3 transition-colors">Upraviť</a>
+                        {{-- Mobile --}}
+                        <a href="{{ route('songs.edit', $song) }}"
+                           class="act-mobile items-center justify-center w-8 h-8 rounded-lg border border-slate-200 text-slate-500 mr-1"
+                           title="Upraviť">✏️</a>
+                        @endif
+                        @if(auth()->user()->hasPermission('songs.delete'))
+                        {{-- Desktop --}}
                         <form method="POST" action="{{ route('songs.destroy', $song) }}" class="act-desktop"
                               onsubmit="return confirm('Naozaj zmazať pieseň „{{ $song->name }}"?')">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-slate-500 hover:text-red-600 font-medium transition-colors">Zmazať</button>
                         </form>
-                        {{-- Mobile: ikony --}}
-                        <a href="{{ route('songs.edit', $song) }}"
-                           class="act-mobile items-center justify-center w-8 h-8 rounded-lg border border-slate-200 text-slate-500 mr-1"
-                           title="Upraviť">✏️</a>
+                        {{-- Mobile --}}
                         <form method="POST" action="{{ route('songs.destroy', $song) }}" style="display:inline"
                               onsubmit="return confirm('Naozaj zmazať pieseň „{{ $song->name }}"?')">
                             @csrf @method('DELETE')
@@ -112,6 +123,7 @@
                                     class="act-mobile items-center justify-center w-8 h-8 rounded-lg border border-slate-200 text-slate-500"
                                     title="Zmazať">🗑️</button>
                         </form>
+                        @endif
                     </td>
                 </tr>
                 @endforeach

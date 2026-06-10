@@ -10,6 +10,8 @@ class RoundController extends Controller
 {
     public function store(Request $request, Setlist $setlist)
     {
+        $this->authorizeEdit($setlist);
+
         $nextPosition = $setlist->rounds()->max('order_position') + 1;
         $round = $setlist->rounds()->create([
             'name'           => 'Kolo ' . ($nextPosition + 1),
@@ -21,6 +23,8 @@ class RoundController extends Controller
 
     public function update(Request $request, Setlist $setlist, Round $round)
     {
+        $this->authorizeEdit($setlist);
+
         $data = $request->validate([
             'name'                => 'sometimes|string|max:100',
             'break_after_minutes' => 'sometimes|integer|min:0|max:120',
@@ -33,12 +37,14 @@ class RoundController extends Controller
 
     public function destroy(Setlist $setlist, Round $round)
     {
+        $this->authorizeEdit($setlist);
         $round->delete();
         return response()->json(['ok' => true]);
     }
 
     public function reorder(Request $request, Setlist $setlist)
     {
+        $this->authorizeEdit($setlist);
         $request->validate(['order' => 'required|array', 'order.*' => 'integer']);
 
         foreach ($request->order as $position => $roundId) {
@@ -46,5 +52,12 @@ class RoundController extends Controller
         }
 
         return response()->json(['ok' => true]);
+    }
+
+    private function authorizeEdit(Setlist $setlist): void
+    {
+        if (!$setlist->canBeEditedBy(auth()->user())) {
+            abort(403, 'Nemáš oprávnenie upravovať tento playlist.');
+        }
     }
 }

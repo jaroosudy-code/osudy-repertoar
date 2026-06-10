@@ -10,6 +10,8 @@ class SetlistSongController extends Controller
 {
     public function store(Request $request, Setlist $setlist)
     {
+        abort_unless($setlist->canBeEditedBy(auth()->user()), 403, 'Nemáš oprávnenie upravovať tento playlist.');
+
         $data = $request->validate([
             'song_id'  => 'required|exists:songs,id',
             'round_id' => 'nullable|exists:rounds,id',
@@ -54,12 +56,15 @@ class SetlistSongController extends Controller
 
     public function destroy(Setlist $setlist, SetlistSong $entry)
     {
+        abort_unless($setlist->canBeEditedBy(auth()->user()), 403);
         $entry->delete();
         return response()->json(['ok' => true]);
     }
 
     public function reorder(Request $request, Setlist $setlist)
     {
+        abort_unless($setlist->canBeEditedBy(auth()->user()), 403);
+
         $request->validate([
             'entries'            => 'required|array',
             'entries.*.id'       => 'required|integer',

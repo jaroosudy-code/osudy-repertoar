@@ -4,16 +4,22 @@
 @section('content')
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-slate-800">Playlisty</h1>
+    @if(auth()->user()->hasPermission('setlists.create'))
     <a href="{{ route('setlists.create') }}"
-       class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors">
+       class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors text-sm">
         + Nový playlist
     </a>
+    @endif
 </div>
 
 @if($setlists->isEmpty())
     <div class="text-center py-16 text-slate-400">
         <div class="text-5xl mb-3">📋</div>
-        <p class="text-lg">Zatiaľ žiadne playlisty. <a href="{{ route('setlists.create') }}" class="text-amber-500 hover:underline">Vytvor prvý!</a></p>
+        <p class="text-lg">Zatiaľ žiadne playlisty.
+            @if(auth()->user()->hasPermission('setlists.create'))
+                <a href="{{ route('setlists.create') }}" class="text-amber-500 hover:underline">Vytvor prvý!</a>
+            @endif
+        </p>
     </div>
 @else
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -40,6 +46,7 @@
                 <a href="{{ route('setlists.export.csv', $setlist) }}"
                    class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 text-sm transition-colors"
                    title="Export CSV">⬇ CSV</a>
+                @if($setlist->canBeDeletedBy(auth()->user()))
                 <form method="POST" action="{{ route('setlists.destroy', $setlist) }}" class="inline"
                       onsubmit="return confirm('Zmazať playlist „{{ $setlist->name }}"?')">
                     @csrf @method('DELETE')
@@ -47,6 +54,7 @@
                             class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-300 text-sm transition-colors"
                             title="Zmazať">🗑</button>
                 </form>
+                @endif
             </div>
         </div>
         @endforeach
