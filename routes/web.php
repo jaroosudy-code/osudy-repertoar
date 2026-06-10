@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChordDiagramController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\RoundController;
@@ -44,4 +45,7 @@ Route::middleware(\App\Http\Middleware\RequireSitePassword::class)->group(functi
 
     Route::get('settings', [AuthController::class, 'showSettings'])->name('settings');
     Route::patch('settings/password', [AuthController::class, 'updatePassword'])->name('settings.password');
+
+    Route::get('api/chords', [ChordDiagramController::class, 'show'])->name('chords.show');
+    Route::post('api/chords', [ChordDiagramController::class, 'upsert'])->name('chords.upsert');
 });
