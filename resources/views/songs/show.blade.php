@@ -300,11 +300,20 @@ function showChordPopup(chordName) {
                 barre_from_string: data.barre_from_string ?? null,
                 barre_to_string: data.barre_to_string ?? null,
             };
+            renderDiagram(false);
         } else {
-            editState = { frets: [-1,-1,-1,-1,-1,-1], fingers: [0,0,0,0,0,0], starting_fret: 1,
+            editState = { frets: [0,0,0,0,0,0], fingers: [0,0,0,0,0,0], starting_fret: 1,
                           barre_fret: null, barre_from_string: null, barre_to_string: null };
+            setEditMode(true);
+            renderDiagram(true);
         }
-        renderDiagram(false);
+        document.getElementById('chord-overlay').classList.add('open');
+    })
+    .catch(() => {
+        editState = { frets: [0,0,0,0,0,0], fingers: [0,0,0,0,0,0], starting_fret: 1,
+                      barre_fret: null, barre_from_string: null, barre_to_string: null };
+        setEditMode(true);
+        renderDiagram(true);
         document.getElementById('chord-overlay').classList.add('open');
     });
 }
