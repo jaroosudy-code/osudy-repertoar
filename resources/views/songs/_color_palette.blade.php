@@ -36,7 +36,7 @@
                         <span x-text="c.name"></span>
                     </span>
                     <button type="button"
-                            @click="deleteColor(c.id)"
+                            @click="deleteColor(c.id, c.name)"
                             class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full hidden group-hover:flex items-center justify-center leading-none">
                         ×
                     </button>
@@ -79,7 +79,8 @@ function colorPalette() {
             setTimeout(() => this.msg = '', 2000);
         },
 
-        async deleteColor(id) {
+        async deleteColor(id, name) {
+            if (!confirm(`Zmazať farbu „${name}"?`)) return;
             await fetch('/colors/' + id, {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }

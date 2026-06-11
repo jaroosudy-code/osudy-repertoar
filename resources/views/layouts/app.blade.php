@@ -15,10 +15,13 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
     <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
     <style>
+        html, body { overflow-x: hidden; max-width: 100%; }
         @media (max-width: 639px) {
             .nav-settings-text { display: none; }
-            #nav-inner { gap: 0.25rem; padding-left: 0.5rem; padding-right: 0.5rem; }
+            #nav-inner { gap: 0.15rem; padding-left: 0.35rem; padding-right: 0.35rem; }
             #nav-inner .nav-logo { height: 2rem; }
+            #nav-inner a { padding-left: 6px !important; padding-right: 6px !important; }
+            #nav-inner form button { padding-left: 4px !important; padding-right: 4px !important; }
         }
     </style>
 </head>
@@ -119,7 +122,7 @@
 {{-- ═══════════════════════════════════════════════════════
      FLOATING CHAT WIDGET
 ═══════════════════════════════════════════════════════ --}}
-<div id="chat-widget" style="position:fixed;bottom:20px;right:20px;z-index:1000;font-family:sans-serif;">
+<div id="chat-widget" style="position:fixed;bottom:20px;right:20px;z-index:1000;font-family:sans-serif;display:flex;flex-direction:column;align-items:flex-end;">
 
     {{-- Chat panel (hidden by default) --}}
     <div id="chat-popup" style="display:none;width:320px;height:460px;background:#fff;border-radius:12px;

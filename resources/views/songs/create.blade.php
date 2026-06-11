@@ -97,11 +97,32 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Text s akordmi</label>
-                <p class="text-xs text-slate-400 mb-2">Akordy vkladaj priamo do textu vo formáte <code class="bg-slate-100 px-1 rounded">&lt;E&gt;</code> <code class="bg-slate-100 px-1 rounded">&lt;F#mi&gt;</code> <code class="bg-slate-100 px-1 rounded">&lt;H7&gt;</code></p>
-                <textarea name="lyrics" rows="12"
-                          class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono text-sm"
-                          placeholder="">{{ old('lyrics') }}</textarea>
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                    <label class="block text-sm font-medium text-slate-700">Text s akordmi</label>
+                    <button type="button" id="btn-chord"
+                            style="font-family:monospace;font-size:0.8rem;padding:2px 10px;border:1.5px solid #cbd5e1;border-radius:6px;background:#f8fafc;color:#64748b;cursor:pointer;font-weight:700;transition:all 0.15s;line-height:1.8;"
+                            onclick="toggleChordInsert()">&lt;CHORD&gt;</button>
+                    <button type="button"
+                            style="font-family:monospace;font-size:0.8rem;padding:2px 10px;border:1.5px solid #86efac;border-radius:6px;background:#f0fdf4;color:#16a34a;cursor:pointer;font-weight:700;line-height:1.8;"
+                            onclick="insertSection('[SLOHA]')">[SLOHA]</button>
+                    <button type="button"
+                            style="font-family:monospace;font-size:0.8rem;padding:2px 10px;border:1.5px solid #f9a8d4;border-radius:6px;background:#fdf2f8;color:#db2777;cursor:pointer;font-weight:700;line-height:1.8;"
+                            onclick="insertSection('[REFRÉN]')">[REFRÉN]</button>
+                </div>
+                <p class="text-xs text-slate-400 mb-2">Klikni <strong>&lt;CHORD&gt;</strong> → napíš akord → klikni znova pre uzatvorenie &nbsp;|&nbsp; <strong>[SLOHA]</strong> a <strong>[REFRÉN]</strong> označujú sekcie pre premietanie</p>
+                <div style="position:relative;">
+                    <div id="lyrics-highlight" aria-hidden="true"
+                         style="position:absolute;top:1px;left:1px;right:17px;
+                                font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;
+                                font-size:0.875rem;line-height:1.25rem;
+                                padding:8px 12px;white-space:pre-wrap;word-break:break-word;
+                                overflow:hidden;pointer-events:none;
+                                background:white;color:#1e293b;border-radius:7px;"></div>
+                    <textarea name="lyrics" id="lyrics-ta" rows="12"
+                              style="position:relative;z-index:1;background:transparent;color:transparent;caret-color:#1e293b;"
+                              class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono text-sm">{{ old('lyrics') }}</textarea>
+                </div>
+<style>#lyrics-highlight::-webkit-scrollbar{display:none;}</style>
             </div>
 
             <div class="flex gap-3 pt-2">
@@ -117,4 +138,124 @@
         </form>
     </div>
 </div>
+<script>
+var chordInserting = false;
+
+function escHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function processChordLine(line) {
+    var html = '';
+    var i = 0;
+    while (i < line.length) {
+        if (line[i] !== '<') {
+            var j = line.indexOf('<', i);
+            html += escHtml(j === -1 ? line.slice(i) : line.slice(i, j));
+            i = j === -1 ? line.length : j;
+        } else {
+            var end = -1;
+            for (var k = i + 1; k < line.length; k++) {
+                if (line[k] === '>') { end = k; break; }
+                if (line[k] === '<') break;
+            }
+            if (end !== -1) {
+                html += '<span style="color:#d97706;font-weight:700;">' + escHtml(line.slice(i, end + 1)) + '</span>';
+                i = end + 1;
+            } else {
+                var stop = line.length;
+                for (var m = i + 1; m < line.length; m++) {
+                    if (line[m] === '<') { stop = m; break; }
+                }
+                html += '<span style="color:#ef4444;">' + escHtml(line.slice(i, stop)) + '</span>';
+                i = stop;
+            }
+        }
+    }
+    return html;
+}
+
+function updateHighlight() {
+    var ta = document.getElementById('lyrics-ta');
+    var hl = document.getElementById('lyrics-highlight');
+    if (!ta || !hl) return;
+    var html = ta.value.split('\n').map(function(line) {
+        var t = line.trim();
+        if (t === '[SLOHA]')  return '<span style="background:#dcfce7;color:#16a34a;font-weight:700;border-radius:3px;padding:0 3px;">[SLOHA]</span>';
+        if (t === '[REFRÉN]') return '<span style="background:#fce7f3;color:#db2777;font-weight:700;border-radius:3px;padding:0 3px;">[REFRÉN]</span>';
+        return processChordLine(line);
+    }).join('\n');
+    hl.innerHTML = html;
+    hl.scrollTop = ta.scrollTop;
+}
+
+function insertSection(marker) {
+    var ta = document.getElementById('lyrics-ta');
+    var pos = ta.selectionStart;
+    var v = ta.value;
+    var before = v.slice(0, pos);
+    var after = v.slice(pos);
+    var prefix = (before.length > 0 && before[before.length - 1] !== '\n') ? '\n' : '';
+    var suffix = (after.length > 0 && after[0] !== '\n') ? '\n' : '';
+    var insert = prefix + marker + suffix;
+    ta.value = before + insert + after;
+    ta.selectionStart = ta.selectionEnd = pos + insert.length;
+    ta.focus();
+    updateHighlight();
+}
+
+function toggleChordInsert() {
+    var btn = document.getElementById('btn-chord');
+    var ta = document.getElementById('lyrics-ta');
+    var pos = ta.selectionStart;
+    var v = ta.value;
+
+    if (!chordInserting) {
+        ta.value = v.slice(0, pos) + '<' + v.slice(pos);
+        ta.selectionStart = ta.selectionEnd = pos + 1;
+        chordInserting = true;
+        btn.style.borderColor = '#f59e0b';
+        btn.style.color = '#f59e0b';
+        btn.style.background = '#fffbeb';
+    } else {
+        ta.value = v.slice(0, pos) + '>' + v.slice(pos);
+        ta.selectionStart = ta.selectionEnd = pos + 1;
+        chordInserting = false;
+        btn.style.borderColor = '#cbd5e1';
+        btn.style.color = '#64748b';
+        btn.style.background = '#f8fafc';
+    }
+    ta.focus();
+    updateHighlight();
+}
+
+function hasUnclosedChord(text) {
+    var parts = text.split('<');
+    for (var i = 1; i < parts.length; i++) {
+        if (parts[i].indexOf('>') === -1) return true;
+    }
+    return false;
+}
+
+(function() {
+    var ta = document.getElementById('lyrics-ta');
+    var hl = document.getElementById('lyrics-highlight');
+    function syncHlHeight() { hl.style.height = ta.clientHeight + 'px'; }
+    syncHlHeight();
+    if (typeof ResizeObserver !== 'undefined') { new ResizeObserver(syncHlHeight).observe(ta); }
+    ta.addEventListener('input', updateHighlight);
+    ta.addEventListener('scroll', function() {
+        hl.scrollTop = ta.scrollTop;
+    });
+    updateHighlight();
+    ta.closest('form').addEventListener('submit', function(e) {
+        if (chordInserting || hasUnclosedChord(ta.value)) {
+            e.preventDefault();
+            alert('Akord nie je uzavretý! Uzatvor ho pred uložením.');
+            document.getElementById('btn-chord').style.boxShadow = '0 0 0 3px rgba(239,68,68,0.4)';
+            setTimeout(function() { document.getElementById('btn-chord').style.boxShadow = ''; }, 1500);
+        }
+    });
+})();
+</script>
 @endsection

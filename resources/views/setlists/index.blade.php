@@ -44,11 +44,12 @@
                     Otvoriť
                 </a>
                 <a href="{{ route('setlists.export.csv', $setlist) }}"
-                   class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 text-sm transition-colors"
-                   title="Export CSV">⬇ CSV</a>
+                   style="padding:6px 10px;background:#16a34a;color:#fff;border-radius:8px;font-size:0.875rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:background .15s;"
+                   onmouseover="this.style.background='#15803d'"
+                   onmouseout="this.style.background='#16a34a'"
+                   title="Export CSV"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>CSV</a>
                 @if($setlist->canBeDeletedBy(auth()->user()))
-                <form method="POST" action="{{ route('setlists.destroy', $setlist) }}" class="inline"
-                      onsubmit="return confirm('Zmazať playlist „{{ $setlist->name }}"?')">
+                <form method="POST" action="{{ route('setlists.destroy', $setlist) }}" class="inline delete-confirm-form" data-name="{{ $setlist->name }}">
                     @csrf @method('DELETE')
                     <button type="submit"
                             class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-300 text-sm transition-colors"
@@ -60,4 +61,12 @@
         @endforeach
     </div>
 @endif
+<script>
+document.querySelectorAll('.delete-confirm-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (confirm('Zmazať playlist „' + form.dataset.name + '"?')) form.submit();
+    });
+});
+</script>
 @endsection

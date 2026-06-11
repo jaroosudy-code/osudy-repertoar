@@ -14,6 +14,7 @@
     text-underline-offset: 2px;
 }
 .chord-span:hover { color: #f59e0b; }
+.chords-hidden .chord-span { display: none; }
 
 /* ── Chord popup ─────────────────────────────────────────── */
 #chord-overlay {
@@ -198,14 +199,20 @@
     </div>
 
     @if($song->lyrics)
-    {{-- Transpozícia --}}
-    <div class="no-print" style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-        <span style="font-size:0.875rem; font-weight:500; color:#475569;">Transpozícia:</span>
-        <button onclick="transpose(-1)"
-                style="width:32px;height:32px;border-radius:50%;background:#e2e8f0;border:none;font-size:1.1rem;font-weight:bold;color:#334155;cursor:pointer;">−</button>
-        <span id="offset-display" style="font-size:0.875rem;font-family:monospace;color:#475569;min-width:80px;text-align:center;">0 (originál)</span>
-        <button onclick="transpose(+1)"
-                style="width:32px;height:32px;border-radius:50%;background:#e2e8f0;border:none;font-size:1.1rem;font-weight:bold;color:#334155;cursor:pointer;">+</button>
+    {{-- Transpozícia + toggle akordov --}}
+    <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <button id="btn-toggle-chords" onclick="toggleChords()"
+                style="padding:6px 16px; border-radius:20px; border:none; font-size:0.875rem; cursor:pointer; background:#e2e8f0; color:#334155; font-weight:500;">
+            ♩ Skryť akordy
+        </button>
+        <div id="transpozicia-row" style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:0.875rem; font-weight:500; color:#475569;">Transpozícia:</span>
+            <button onclick="transpose(-1)"
+                    style="width:32px;height:32px;border-radius:50%;background:#e2e8f0;border:none;font-size:1.1rem;font-weight:bold;color:#334155;cursor:pointer;">−</button>
+            <span id="offset-display" style="font-size:0.875rem;font-family:monospace;color:#475569;min-width:80px;text-align:center;">0 (originál)</span>
+            <button onclick="transpose(+1)"
+                    style="width:32px;height:32px;border-radius:50%;background:#e2e8f0;border:none;font-size:1.1rem;font-weight:bold;color:#334155;cursor:pointer;">+</button>
+        </div>
     </div>
 
     {{-- Text s akordmi --}}
@@ -214,6 +221,28 @@
              style="font-family:monospace; font-size:1rem; line-height:2.4em; white-space:pre-wrap; color:#e2e8f0;">
 @php
     $raw = $song->lyrics ?? '';
+    $sloka = 0;
+    $rawLines = explode("\n", str_replace("\r\n", "\n", $raw));
+    $result = [];
+    $li = 0;
+    $indent = '';
+    while ($li < count($rawLines)) {
+        $t = trim($rawLines[$li]);
+        if ($t === '[SLOHA]' || $t === '[REFRÉN]') {
+            $prefix = $t === '[SLOHA]' ? (++$sloka . '. ') : 'R: ';
+            $indent = str_repeat(' ', mb_strlen($prefix));
+            $li++;
+            while ($li < count($rawLines) && trim($rawLines[$li]) === '') $li++;
+            if ($li < count($rawLines)) { $result[] = $prefix . $rawLines[$li]; $li++; }
+            else { $result[] = rtrim($prefix); }
+        } elseif ($t === '') {
+            $indent = '';
+            $result[] = $rawLines[$li]; $li++;
+        } else {
+            $result[] = $indent . $rawLines[$li]; $li++;
+        }
+    }
+    $raw = implode("\n", $result);
     $parts = preg_split('/(<[A-H][^>]{0,20}>)/', $raw, -1, PREG_SPLIT_DELIM_CAPTURE);
     foreach ($parts as $i => $part) {
         if ($i % 2 === 1) {
@@ -260,8 +289,34 @@ function transposeChord(chord, semitones) {
     return SCALE[idx] + m[2];
 }
 
+function processMarkers(text) {
+    var sloka = 0;
+    var lines = text.split('\n');
+    var result = [];
+    var indent = '';
+    var i = 0;
+    while (i < lines.length) {
+        var t = lines[i].trim();
+        if (t === '[SLOHA]' || t === '[REFRÉN]') {
+            var prefix = t === '[SLOHA]' ? (++sloka + '. ') : 'R: ';
+            indent = ' '.repeat(prefix.length);
+            i++;
+            while (i < lines.length && lines[i].trim() === '') i++;
+            if (i < lines.length) { result.push(prefix + lines[i]); i++; }
+            else result.push(prefix.trim());
+        } else if (t === '') {
+            indent = '';
+            result.push(lines[i]); i++;
+        } else {
+            result.push(indent + lines[i]); i++;
+        }
+    }
+    return result.join('\n');
+}
+
 function renderLyrics(text, semitones) {
-    const parts = text.split(/(<[A-H][^>]{0,20}>)/);
+    const processed = processMarkers(text);
+    const parts = processed.split(/(<[A-H][^>]{0,20}>)/);
     return parts.map((part, i) => {
         if (i % 2 === 1) {
             const chord = part.slice(1, -1);
@@ -406,9 +461,11 @@ function renderDiagram(editing) {
 // ── Editor interactions ───────────────────────────────────────────────────────
 function setEditMode(on) {
     editMode = on;
-    document.getElementById('btn-edit-chord').textContent = on ? 'Späť' : 'Upraviť';
+    const btnEdit    = document.getElementById('btn-edit-chord');
+    const actionsEl  = document.getElementById('chord-actions');
+    if (btnEdit)   btnEdit.textContent = on ? 'Späť' : 'Upraviť';
+    if (actionsEl) actionsEl.style.display = on ? 'none' : '';
     document.getElementById('chord-save-options').style.display = on ? '' : 'none';
-    document.getElementById('chord-actions').style.display = on ? 'none' : '';
     document.getElementById('chord-editor-controls').style.display = on ? '' : 'none';
     if (on) document.getElementById('inp-starting-fret').value = editState.starting_fret;
 }
@@ -482,6 +539,39 @@ function detectBarre() {
         editState.barre_fret = editState.barre_from_string = editState.barre_to_string = null;
     }
 }
+
+// ── Skryť/zobraziť akordy ─────────────────────────────────────────────────────
+let chordsVisible = localStorage.getItem('chordsVisible') !== '0';
+
+function toggleChords() {
+    chordsVisible = !chordsVisible;
+    localStorage.setItem('chordsVisible', chordsVisible ? '1' : '0');
+    applyChordVisibility();
+}
+
+function applyChordVisibility() {
+    const container = document.getElementById('lyrics-container');
+    const btn = document.getElementById('btn-toggle-chords');
+    const transpRow = document.getElementById('transpozicia-row');
+    if (chordsVisible) {
+        container.classList.remove('chords-hidden');
+        if (btn) {
+            btn.textContent = '♩ Skryť akordy';
+            btn.style.background = '#e2e8f0';
+            btn.style.color = '#334155';
+        }
+        if (transpRow) transpRow.style.display = 'flex';
+    } else {
+        container.classList.add('chords-hidden');
+        if (btn) {
+            btn.textContent = '♩ Zobraziť akordy';
+            btn.style.background = '#dcfce7';
+            btn.style.color = '#15803d';
+        }
+        if (transpRow) transpRow.style.display = 'none';
+    }
+}
+applyChordVisibility();
 
 function saveChord(scope) {
     // scope: 'local' (for this song) | 'global' (entire DB)

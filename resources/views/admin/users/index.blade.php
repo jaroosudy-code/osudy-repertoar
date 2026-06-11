@@ -58,8 +58,7 @@
                             <a href="{{ route('admin.users.edit', $user) }}"
                                class="text-slate-500 hover:text-amber-600 font-medium transition-colors mr-3">Upraviť</a>
                             @if($user->id !== auth()->id())
-                            <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="inline"
-                                  onsubmit="return confirm('Zmazať používateľa „{{ $user->name }}"?')">
+                            <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="inline delete-confirm-form" data-name="{{ $user->name }}">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="text-slate-500 hover:text-red-600 font-medium transition-colors">Zmazať</button>
                             </form>
@@ -72,4 +71,12 @@
         </div>
     @endif
 </div>
+<script>
+document.querySelectorAll('.delete-confirm-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (confirm('Zmazať používateľa „' + form.dataset.name + '"?')) form.submit();
+    });
+});
+</script>
 @endsection

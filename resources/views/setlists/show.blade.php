@@ -5,6 +5,15 @@
 @php
     $isEntertainment = $setlist->event_type === 'entertainment';
     $csrfToken = csrf_token();
+    $projectionSongs = [];
+    if ($isEntertainment) {
+        foreach ($rounds as $round)
+            foreach ($round->setlistSongs as $e)
+                $projectionSongs[] = ['name' => $e->song->name, 'lyrics' => $e->song->lyrics ?? ''];
+    } else {
+        foreach ($entries ?? [] as $e)
+            $projectionSongs[] = ['name' => $e->song->name, 'lyrics' => $e->song->lyrics ?? ''];
+    }
 @endphp
 
 {{-- Header --}}
@@ -18,9 +27,19 @@
         </span>
     </div>
     <div class="flex gap-2">
+        @if(count($projectionSongs))
+        <button onclick="openProjSettings()"
+                style="padding:6px 14px;background:#f59e0b;color:#1e293b;border:none;border-radius:8px;font-size:0.875rem;font-weight:600;cursor:pointer;transition:background .15s;"
+                onmouseover="this.style.background='#d97706'"
+                onmouseout="this.style.background='#f59e0b'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:5px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Spustiť premietanie
+        </button>
+        @endif
         <a href="{{ route('setlists.export.csv', $setlist) }}"
-           class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition-colors">
-            ⬇ Export CSV
+           style="padding:6px 14px;background:#16a34a;color:#fff;border-radius:8px;font-size:0.875rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .15s;"
+           onmouseover="this.style.background='#15803d'"
+           onmouseout="this.style.background='#16a34a'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>Export CSV
         </a>
     </div>
 </div>
@@ -350,6 +369,8 @@ if (CAN_EDIT) {
 
 // Remove entry
 async function removeEntry(entryId, btn) {
+    const name = btn.closest('.song-entry').querySelector('.flex-1')?.textContent?.trim() ?? 'túto pieseň';
+    if (!confirm(`Odobrať „${name}" z playlistu?`)) return;
     await apiDelete(`/setlists/${SETLIST_ID}/songs/${entryId}`);
     btn.closest('.song-entry').remove();
     updateTotals();
@@ -437,5 +458,267 @@ libType.addEventListener('change', filterLibrary);
 
 // Initial totals
 updateTotals();
+</script>
+{{-- ═══════════════ PROJECTION SETTINGS MODAL ═══════════════ --}}
+<div id="proj-settings" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9990;align-items:center;justify-content:center;">
+    <div style="background:#1e293b;border-radius:16px;padding:32px;width:420px;max-width:92vw;color:#fff;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+        <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:24px;color:#f1f5f9;">⚙ Nastavenia premietania</h2>
+
+        <div style="margin-bottom:20px;">
+            <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:10px;">Veľkosť písma</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <button onclick="projFontAdj(-2)" style="width:38px;height:38px;border-radius:8px;background:#334155;border:none;color:#e2e8f0;font-size:0.85rem;font-weight:700;cursor:pointer;">A-</button>
+                <input id="proj-font-range" type="range" min="18" max="48" value="26"
+                       oninput="document.getElementById('proj-font-val').textContent=this.value+'px'"
+                       style="flex:1;accent-color:#f59e0b;cursor:pointer;">
+                <button onclick="projFontAdj(+2)" style="width:38px;height:38px;border-radius:8px;background:#334155;border:none;color:#e2e8f0;font-size:0.85rem;font-weight:700;cursor:pointer;">A+</button>
+                <span id="proj-font-val" style="min-width:40px;text-align:right;font-size:0.85rem;color:#e2e8f0;font-family:monospace;">26px</span>
+            </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+            <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:10px;">Zobraziť akordy</div>
+            <div style="display:flex;gap:8px;">
+                <button id="proj-ch-yes" onclick="setProjChords(true)"
+                        style="flex:1;padding:9px;border-radius:8px;border:2px solid #f59e0b;background:#fffbeb;color:#92400e;font-weight:600;cursor:pointer;transition:all .15s;">Áno</button>
+                <button id="proj-ch-no" onclick="setProjChords(false)"
+                        style="flex:1;padding:9px;border-radius:8px;border:2px solid transparent;background:#334155;color:#94a3b8;font-weight:600;cursor:pointer;transition:all .15s;">Nie</button>
+            </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+            <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:10px;">Vynechať refrény <span style="font-size:0.75rem;color:#64748b;">(len pre piesne s [REFRÉN] markerom)</span></div>
+            <div style="display:flex;gap:8px;">
+                <button id="proj-skip-yes" onclick="setProjSkipRefrain(true)"
+                        style="flex:1;padding:9px;border-radius:8px;border:2px solid transparent;background:#334155;color:#94a3b8;font-weight:600;cursor:pointer;transition:all .15s;">Áno</button>
+                <button id="proj-skip-no" onclick="setProjSkipRefrain(false)"
+                        style="flex:1;padding:9px;border-radius:8px;border:2px solid #f59e0b;background:#fffbeb;color:#92400e;font-weight:600;cursor:pointer;transition:all .15s;">Nie</button>
+            </div>
+        </div>
+
+        <div style="margin-bottom:28px;">
+            <div style="font-size:0.85rem;color:#94a3b8;margin-bottom:10px;">Zobraziť číslovanie (1., 2., R:)</div>
+            <div style="display:flex;gap:8px;">
+                <button id="proj-lbl-yes" onclick="setProjShowLabels(true)"
+                        style="flex:1;padding:9px;border-radius:8px;border:2px solid #f59e0b;background:#fffbeb;color:#92400e;font-weight:600;cursor:pointer;transition:all .15s;">Áno</button>
+                <button id="proj-lbl-no" onclick="setProjShowLabels(false)"
+                        style="flex:1;padding:9px;border-radius:8px;border:2px solid transparent;background:#334155;color:#94a3b8;font-weight:600;cursor:pointer;transition:all .15s;">Nie</button>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button onclick="closeProjSettings()" style="padding:9px 22px;border-radius:8px;background:#334155;border:none;color:#94a3b8;cursor:pointer;font-size:0.9rem;">Zrušiť</button>
+            <button onclick="startProjection()" style="padding:9px 26px;border-radius:8px;background:#f59e0b;border:none;color:#1e293b;font-weight:700;cursor:pointer;font-size:0.9rem;display:inline-flex;align-items:center;gap:7px;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Spustiť</button>
+        </div>
+    </div>
+</div>
+
+{{-- ═══════════════ PROJECTION FULLSCREEN ═══════════════ --}}
+<div id="proj-screen" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;overflow:hidden;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;">
+    <div style="position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:9px 20px;z-index:1;">
+        <div id="proj-title" style="font-size:0.85rem;font-weight:500;color:rgba(255,255,255,0.35);letter-spacing:0.03em;"></div>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <span id="proj-counter" style="font-size:0.7rem;color:rgba(255,255,255,0.2);font-family:monospace;"></span>
+            <button onclick="closeProjection()"
+                    style="background:none;border:none;color:rgba(255,255,255,0.18);font-size:1rem;cursor:pointer;line-height:1;padding:4px 8px;border-radius:4px;"
+                    onmouseover="this.style.color='rgba(255,255,255,0.6)'"
+                    onmouseout="this.style.color='rgba(255,255,255,0.18)'">✕</button>
+        </div>
+    </div>
+    <div id="proj-content" style="height:calc(100vh - 42px);padding:12px 60px 20px;color:#fff;line-height:1.5;overflow:hidden;column-count:2;column-gap:80px;column-fill:auto;box-sizing:border-box;"></div>
+</div>
+
+<script>
+const PROJ_SONGS = @json($projectionSongs);
+let projIndex = 0;
+let projShowChords = localStorage.getItem('projChords') !== '0';
+let projSkipRefrain = localStorage.getItem('projSkipRefrain') === '1';
+let projShowLabels = localStorage.getItem('projShowLabels') !== '0';
+
+function openProjSettings() {
+    const savedFs = localStorage.getItem('projFontSize') || '26';
+    document.getElementById('proj-font-range').value = savedFs;
+    document.getElementById('proj-font-val').textContent = savedFs + 'px';
+    projShowChords = localStorage.getItem('projChords') !== '0';
+    projSkipRefrain = localStorage.getItem('projSkipRefrain') === '1';
+    projShowLabels  = localStorage.getItem('projShowLabels') !== '0';
+    updateProjChordBtns();
+    updateProjSkipBtns();
+    updateProjLabelBtns();
+    document.getElementById('proj-settings').style.display = 'flex';
+}
+
+function closeProjSettings() {
+    document.getElementById('proj-settings').style.display = 'none';
+}
+
+function projFontAdj(delta) {
+    const sl = document.getElementById('proj-font-range');
+    sl.value = Math.min(48, Math.max(18, parseInt(sl.value) + delta));
+    document.getElementById('proj-font-val').textContent = sl.value + 'px';
+}
+
+function setProjChords(val) {
+    projShowChords = val;
+    updateProjChordBtns();
+}
+
+function updateProjChordBtns() {
+    const yes = document.getElementById('proj-ch-yes');
+    const no  = document.getElementById('proj-ch-no');
+    if (projShowChords) {
+        yes.style.cssText += ';border-color:#f59e0b;background:#fffbeb;color:#92400e;';
+        no.style.cssText  += ';border-color:transparent;background:#334155;color:#94a3b8;';
+    } else {
+        no.style.cssText  += ';border-color:#f59e0b;background:#fffbeb;color:#92400e;';
+        yes.style.cssText += ';border-color:transparent;background:#334155;color:#94a3b8;';
+    }
+}
+
+function setProjSkipRefrain(val) { projSkipRefrain = val; updateProjSkipBtns(); }
+function updateProjSkipBtns() {
+    var yes = document.getElementById('proj-skip-yes');
+    var no  = document.getElementById('proj-skip-no');
+    if (projSkipRefrain) {
+        yes.style.cssText += ';border-color:#f59e0b;background:#fffbeb;color:#92400e;';
+        no.style.cssText  += ';border-color:transparent;background:#334155;color:#94a3b8;';
+    } else {
+        no.style.cssText  += ';border-color:#f59e0b;background:#fffbeb;color:#92400e;';
+        yes.style.cssText += ';border-color:transparent;background:#334155;color:#94a3b8;';
+    }
+}
+
+function setProjShowLabels(val) { projShowLabels = val; updateProjLabelBtns(); }
+function updateProjLabelBtns() {
+    var yes = document.getElementById('proj-lbl-yes');
+    var no  = document.getElementById('proj-lbl-no');
+    if (projShowLabels) {
+        yes.style.cssText += ';border-color:#f59e0b;background:#fffbeb;color:#92400e;';
+        no.style.cssText  += ';border-color:transparent;background:#334155;color:#94a3b8;';
+    } else {
+        no.style.cssText  += ';border-color:#f59e0b;background:#fffbeb;color:#92400e;';
+        yes.style.cssText += ';border-color:transparent;background:#334155;color:#94a3b8;';
+    }
+}
+
+function startProjection() {
+    localStorage.setItem('projFontSize', document.getElementById('proj-font-range').value);
+    localStorage.setItem('projChords', projShowChords ? '1' : '0');
+    localStorage.setItem('projSkipRefrain', projSkipRefrain ? '1' : '0');
+    localStorage.setItem('projShowLabels', projShowLabels ? '1' : '0');
+    closeProjSettings();
+    projIndex = 0;
+    var screen = document.getElementById('proj-screen');
+    screen.style.display = 'block';
+    projRender();
+    document.addEventListener('keydown', projKeyHandler);
+    var el = screen;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+    if (req) req.call(el).catch(function(){});
+}
+
+function closeProjection() {
+    var screen = document.getElementById('proj-screen');
+    screen.style.display = 'none';
+    document.removeEventListener('keydown', projKeyHandler);
+    var exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+    if (exit && (document.fullscreenElement || document.webkitFullscreenElement)) exit.call(document).catch(function(){});
+}
+
+document.addEventListener('fullscreenchange', function() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        var screen = document.getElementById('proj-screen');
+        if (screen && screen.style.display !== 'none') closeProjection();
+    }
+});
+document.addEventListener('webkitfullscreenchange', function() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        var screen = document.getElementById('proj-screen');
+        if (screen && screen.style.display !== 'none') closeProjection();
+    }
+});
+
+function projKeyHandler(e) {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); projNavigate(1); }
+    if (e.key === 'ArrowLeft'  || e.key === 'PageUp')   { e.preventDefault(); projNavigate(-1); }
+    if (e.key === 'Escape') closeProjection();
+}
+
+function projNavigate(delta) {
+    projIndex = Math.max(0, Math.min(PROJ_SONGS.length - 1, projIndex + delta));
+    projRender();
+}
+
+function projEsc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function projParseLine(text, showChords) {
+    return text.split(/(<[A-H][^>]{0,20}>)/).map(function(part, i) {
+        if (i % 2 === 1) {
+            if (!showChords) return '';
+            var ch = part.slice(1,-1).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            return '<sup style="color:#fbbf24;font-size:0.6em;font-weight:700;letter-spacing:0.03em;">' + ch + '</sup>';
+        }
+        return projEsc(part);
+    }).join('');
+}
+
+function projSplitSections(text) {
+    var sections = [];
+    var current = { type: 'text', lines: [] };
+    text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').forEach(function(line) {
+        var t = line.trim();
+        if (t === '[SLOHA]') {
+            if (current.lines.some(function(l) { return l.trim(); })) sections.push(current);
+            current = { type: 'sloha', lines: [] };
+        } else if (t === '[REFRÉN]') {
+            if (current.lines.some(function(l) { return l.trim(); })) sections.push(current);
+            current = { type: 'refren', lines: [] };
+        } else {
+            current.lines.push(line);
+        }
+    });
+    if (current.lines.some(function(l) { return l.trim(); })) sections.push(current);
+    return sections;
+}
+
+function projBuildHTML(song) {
+    var sections = projSplitSections(song.lyrics || '');
+    if (projSkipRefrain) {
+        sections = sections.filter(function(s) { return s.type !== 'refren'; });
+    }
+    var sloka = 0;
+    return sections.map(function(s) {
+        var label = '';
+        if (s.type === 'sloha') { sloka++; if (projShowLabels) label = sloka + '.'; }
+        else if (s.type === 'refren') { if (projShowLabels) label = 'R:'; }
+        var sLines = s.lines.join('\n').trim().split('\n').filter(function(l) { return l.trim(); });
+        if (!sLines.length) return '';
+        var textHtml = sLines.map(function(l) { return projParseLine(l, projShowChords); }).join('<br>');
+        if (label) {
+            return '<div style="display:flex;gap:0.25em;margin-bottom:1.3em;align-items:baseline;break-inside:avoid;page-break-inside:avoid;">'
+                + '<span style="flex-shrink:0;">' + projEsc(label) + '</span>'
+                + '<span>' + textHtml + '</span>'
+                + '</div>';
+        }
+        return '<div style="margin-bottom:1.3em;break-inside:avoid;page-break-inside:avoid;">' + textHtml + '</div>';
+    }).filter(Boolean).join('');
+}
+
+function projRender() {
+    var song = PROJ_SONGS[projIndex];
+    var prefFs = parseInt(localStorage.getItem('projFontSize') || '26');
+    var content = document.getElementById('proj-content');
+    document.getElementById('proj-title').textContent = song.name;
+    document.getElementById('proj-counter').textContent = (projIndex + 1) + ' / ' + PROJ_SONGS.length;
+    content.innerHTML = projBuildHTML(song);
+    var size = prefFs;
+    content.style.fontSize = size + 'px';
+    while (content.scrollWidth > content.clientWidth && size > 10) {
+        size -= 0.5;
+        content.style.fontSize = size + 'px';
+    }
+}
 </script>
 @endsection

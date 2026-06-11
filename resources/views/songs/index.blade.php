@@ -110,14 +110,12 @@
                         @endif
                         @if(auth()->user()->hasPermission('songs.delete'))
                         {{-- Desktop --}}
-                        <form method="POST" action="{{ route('songs.destroy', $song) }}" class="act-desktop"
-                              onsubmit="return confirm('Naozaj zmazať pieseň „{{ $song->name }}"?')">
+                        <form method="POST" action="{{ route('songs.destroy', $song) }}" class="act-desktop delete-song-form" data-name="{{ $song->name }}">
                             @csrf @method('DELETE')
                             <button type="submit" class="text-slate-500 hover:text-red-600 font-medium transition-colors">Zmazať</button>
                         </form>
                         {{-- Mobile --}}
-                        <form method="POST" action="{{ route('songs.destroy', $song) }}" style="display:inline"
-                              onsubmit="return confirm('Naozaj zmazať pieseň „{{ $song->name }}"?')">
+                        <form method="POST" action="{{ route('songs.destroy', $song) }}" style="display:inline" class="delete-song-form" data-name="{{ $song->name }}">
                             @csrf @method('DELETE')
                             <button type="submit"
                                     class="act-mobile items-center justify-center w-8 h-8 rounded-lg border border-slate-200 text-slate-500"
@@ -160,5 +158,14 @@ function applyFilters() {
 search?.addEventListener('input', applyFilters);
 filterTempo?.addEventListener('change', applyFilters);
 filterType?.addEventListener('change', applyFilters);
+
+document.querySelectorAll('.delete-song-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (confirm('Naozaj zmazať pieseň „' + form.dataset.name + '"?')) {
+            form.submit();
+        }
+    });
+});
 </script>
 @endsection

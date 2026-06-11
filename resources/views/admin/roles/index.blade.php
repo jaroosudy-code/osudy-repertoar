@@ -52,8 +52,7 @@
                     Upraviť
                 </a>
                 @if($role->users_count === 0)
-                <form method="POST" action="{{ route('admin.roles.destroy', $role) }}" class="inline"
-                      onsubmit="return confirm('Zmazať rolu „{{ $role->name }}"?')">
+                <form method="POST" action="{{ route('admin.roles.destroy', $role) }}" class="inline delete-confirm-form" data-name="{{ $role->name }}">
                     @csrf @method('DELETE')
                     <button type="submit"
                             class="px-3 py-1.5 border border-slate-300 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-300 rounded-lg text-xs font-medium transition-colors">
@@ -69,4 +68,12 @@
     </div>
     @endforeach
 </div>
+<script>
+document.querySelectorAll('.delete-confirm-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (confirm('Zmazať rolu „' + form.dataset.name + '"?')) form.submit();
+    });
+});
+</script>
 @endsection
