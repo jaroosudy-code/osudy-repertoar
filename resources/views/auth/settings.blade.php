@@ -14,7 +14,7 @@
         <div>
             <p class="font-semibold text-slate-800 text-lg leading-tight">{{ auth()->user()->name }}</p>
             <p class="text-sm text-slate-500 mt-0.5">{{ auth()->user()->email }}</p>
-            @if(auth()->user()->role)
+            @if(auth()->user()->isAdmin() && auth()->user()->role)
                 <span class="inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-medium {{ auth()->user()->role->badgeClass() }}">
                     {{ auth()->user()->role->name }}
                 </span>

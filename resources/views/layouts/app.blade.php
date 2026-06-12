@@ -13,7 +13,21 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+    <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+    // Stránka sa sama uloží do cache pri každom načítaní online
+    if ('caches' in window) {
+        window.addEventListener('load', function() {
+            if (!navigator.onLine) return;
+            caches.open('osudy-v7').then(function(cache) {
+                var html = '<!DOCTYPE html>' + document.documentElement.outerHTML;
+                cache.put(window.location.href, new Response(html, {
+                    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+                }));
+            });
+        });
+    }
+    </script>
     <style>
         html, body { overflow-x: hidden; max-width: 100%; }
         @media (max-width: 639px) {

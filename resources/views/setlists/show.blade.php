@@ -6,13 +6,19 @@
     $isEntertainment = $setlist->event_type === 'entertainment';
     $csrfToken = csrf_token();
     $projectionSongs = [];
+    $playlistSongIds = [];
     if ($isEntertainment) {
-        foreach ($rounds as $round)
-            foreach ($round->setlistSongs as $e)
+        foreach ($rounds as $round) {
+            foreach ($round->setlistSongs as $e) {
                 $projectionSongs[] = ['name' => $e->song->name, 'lyrics' => $e->song->lyrics ?? ''];
+                $playlistSongIds[] = $e->song_id;
+            }
+        }
     } else {
-        foreach ($entries ?? [] as $e)
+        foreach ($entries ?? [] as $e) {
             $projectionSongs[] = ['name' => $e->song->name, 'lyrics' => $e->song->lyrics ?? ''];
+            $playlistSongIds[] = $e->song_id;
+        }
     }
 @endphp
 
@@ -44,12 +50,26 @@
     </div>
 </div>
 
+{{-- Mobile tab bar (hidden on desktop via JS) --}}
+@if($canEdit)
+<div id="mob-tabs" style="display:none;margin-bottom:12px;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;font-size:0.875rem;font-weight:600;">
+    <button id="tab-btn-lib" onclick="showTab('lib')"
+            style="flex:1;padding:11px;background:#f59e0b;color:#1e293b;border:none;cursor:pointer;">
+        📚 Knižnica
+    </button>
+    <button id="tab-btn-list" onclick="showTab('list')"
+            style="flex:1;padding:11px;background:#f8fafc;color:#475569;border:none;cursor:pointer;">
+        🎵 Playlist
+    </button>
+</div>
+@endif
+
 {{-- Two-column layout --}}
-<div class="flex gap-4 h-[calc(100vh-160px)]">
+<div id="main-layout" class="flex gap-4 h-[calc(100vh-160px)]">
 
 @if($canEdit)
     {{-- LEFT: Song Library --}}
-    <div class="w-72 shrink-0 flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div id="panel-lib" class="w-72 shrink-0 flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="p-3 border-b border-slate-200 bg-slate-50">
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Knižnica piesní</p>
             <input type="text" id="lib-search" placeholder="Hľadať…"
@@ -74,11 +94,15 @@
                  data-duration="{{ $song->duration_seconds }}"
                  data-name="{{ strtolower($song->name) }}"
                  data-tempo="{{ $song->tempo }}"
-                 data-type="{{ $song->type }}">
+                 data-type="{{ $song->type }}"
+                 data-in-playlist="{{ in_array($song->id, $playlistSongIds) ? '1' : '0' }}">
                 <span class="inline-block w-3 h-3 rounded-full shrink-0 border border-slate-300"
                       style="background-color: {{ $song->color }}"></span>
                 <span class="flex-1 text-sm font-medium text-slate-700 truncate">{{ $song->name }}</span>
                 <span class="text-xs text-slate-400 font-mono shrink-0">{{ $song->duration_formatted }}</span>
+                <span class="song-in-playlist" style="display:none;color:#16a34a;font-size:1.1rem;font-weight:bold;flex-shrink:0;">✓</span>
+                <button class="mob-add-btn" style="display:none;flex-shrink:0;width:28px;height:28px;border-radius:50%;background:#f59e0b;color:#fff;border:none;font-size:1.2rem;font-weight:bold;cursor:pointer;align-items:center;justify-content:center;line-height:1;"
+                        onclick="event.stopPropagation();mobileTapAdd({{ $song->id }},this.closest('.library-song'))">+</button>
             </div>
             @endforeach
         </div>
@@ -86,7 +110,7 @@
 @endif
 
     {{-- RIGHT: Setlist Builder --}}
-    <div class="flex-1 flex flex-col overflow-hidden">
+    <div id="panel-list" class="flex-1 flex flex-col overflow-hidden">
         <div class="flex-1 overflow-y-auto space-y-4" id="builder-area">
 
         @if($isEntertainment)
@@ -122,6 +146,7 @@
                         @foreach($round->setlistSongs as $entry)
                         <div class="song-entry flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white {{ $canEdit ? 'cursor-grab active:cursor-grabbing' : '' }} select-none"
                              data-entry-id="{{ $entry->id }}"
+                             data-song-id="{{ $entry->song->id }}"
                              data-duration="{{ $entry->song->duration_seconds }}">
                             @if($canEdit)<span class="drag-handle text-slate-300 hover:text-slate-500 cursor-grab text-lg">⠿</span>@endif
                             <span class="inline-block w-3 h-3 rounded-full shrink-0 border border-slate-300"
@@ -131,7 +156,7 @@
                             @if($entry->song->tempo === 'fast')
                                 <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">⚡</span>
                             @else
-                                <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">🌊</span>
+                                <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">🐢</span>
                             @endif
                             @if($canEdit)
                             <button onclick="removeEntry({{ $entry->id }}, this)"
@@ -186,6 +211,7 @@
                     @foreach($entries ?? [] as $entry)
                     <div class="song-entry flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white {{ $canEdit ? 'cursor-grab active:cursor-grabbing hover:border-slate-300' : '' }} select-none"
                          data-entry-id="{{ $entry->id }}"
+                         data-song-id="{{ $entry->song->id }}"
                          data-duration="{{ $entry->song->duration_seconds }}">
                         @if($canEdit)<span class="drag-handle text-slate-300 hover:text-slate-500 cursor-grab text-lg">⠿</span>@endif
                         <span class="inline-block w-3 h-3 rounded-full shrink-0 border border-slate-300"
@@ -195,7 +221,7 @@
                         @if($entry->song->tempo === 'fast')
                             <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">⚡</span>
                         @else
-                            <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">🌊</span>
+                            <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">🐢</span>
                         @endif
                         @if($canEdit)
                         <button onclick="removeEntry({{ $entry->id }}, this)"
@@ -291,7 +317,7 @@ function buildEntryEl(data) {
         <span class="inline-block w-3 h-3 rounded-full shrink-0 border border-slate-300" style="background-color:${data.color}"></span>
         <span class="flex-1 text-sm font-medium text-slate-700 truncate">${data.name}</span>
         <span class="text-xs font-mono text-slate-400 shrink-0">${data.duration_formatted}</span>
-        <span class="text-xs px-1.5 py-0.5 rounded ${data.tempo==='fast'?'bg-blue-100 text-blue-600':'bg-orange-100 text-orange-600'}">${data.tempo==='fast'?'⚡':'🌊'}</span>
+        <span class="text-xs px-1.5 py-0.5 rounded ${data.tempo==='fast'?'bg-blue-100 text-blue-600':'bg-orange-100 text-orange-600'}">${data.tempo==='fast'?'⚡':'🐢'}</span>
         <button onclick="removeEntry(${data.id},this)" class="text-slate-300 hover:text-red-500 transition-colors ml-1 text-lg leading-none shrink-0">×</button>
     `;
     return div;
@@ -315,6 +341,9 @@ function initDropZone(zone) {
         animation: 150,
         handle: '.drag-handle',
         ghostClass: 'opacity-40',
+        delay: 200,
+        delayOnTouchOnly: true,
+        touchStartThreshold: 5,
         onAdd(evt) {
             const libSong = evt.item;
             const songId = libSong.dataset.songId;
@@ -332,8 +361,11 @@ function initDropZone(zone) {
                     }
                     if (data.id) {
                         const el = buildEntryEl(data);
+                        el.dataset.songId = songId;
                         zone.appendChild(el);
                         updateTotals();
+                        const libEl = document.querySelector(`.library-song[data-song-id="${songId}"]`);
+                        if (libEl) markLibrarySong(libEl, true);
                     }
                 });
         },
@@ -359,6 +391,8 @@ if (CAN_EDIT && document.getElementById('song-library')) {
         sort: false,
         animation: 150,
         ghostClass: 'opacity-40',
+        delay: 200,
+        touchStartThreshold: 5,
     });
 }
 
@@ -369,11 +403,16 @@ if (CAN_EDIT) {
 
 // Remove entry
 async function removeEntry(entryId, btn) {
-    const name = btn.closest('.song-entry').querySelector('.flex-1')?.textContent?.trim() ?? 'túto pieseň';
-    if (!confirm(`Odobrať „${name}" z playlistu?`)) return;
+    const entry = btn.closest('.song-entry');
+    const songId = entry.dataset.songId;
     await apiDelete(`/setlists/${SETLIST_ID}/songs/${entryId}`);
-    btn.closest('.song-entry').remove();
+    entry.remove();
     updateTotals();
+    if (songId) {
+        const stillInPlaylist = document.querySelector(`.song-entry[data-song-id="${songId}"]`);
+        const libEl = document.querySelector(`.library-song[data-song-id="${songId}"]`);
+        if (libEl) markLibrarySong(libEl, !!stillInPlaylist);
+    }
 }
 
 // Delete round
@@ -458,6 +497,70 @@ libType.addEventListener('change', filterLibrary);
 
 // Initial totals
 updateTotals();
+
+// ── Zelené fajky v knižnici ───────────────────────────────────
+function markLibrarySong(songEl, inPlaylist) {
+    var check = songEl.querySelector('.song-in-playlist');
+    var btn   = songEl.querySelector('.mob-add-btn');
+    if (check) check.style.display = inPlaylist ? 'inline' : 'none';
+    if (btn)   btn.style.display   = (!inPlaylist && window.innerWidth < 768) ? 'inline-flex' : 'none';
+    songEl.dataset.inPlaylist = inPlaylist ? '1' : '0';
+}
+
+function initLibraryMarkers() {
+    document.querySelectorAll('.library-song').forEach(function(el) {
+        markLibrarySong(el, el.dataset.inPlaylist === '1');
+    });
+}
+
+// ── Mobile tabs ──────────────────────────────────────────────
+function showTab(tab) {
+    var lib  = document.getElementById('panel-lib');
+    var list = document.getElementById('panel-list');
+    var btnLib  = document.getElementById('tab-btn-lib');
+    var btnList = document.getElementById('tab-btn-list');
+    if (!lib || !list) return;
+    lib.style.display  = tab === 'lib'  ? 'flex' : 'none';
+    list.style.display = tab === 'list' ? 'flex' : 'none';
+    btnLib.style.background  = tab === 'lib'  ? '#f59e0b' : '#f8fafc';
+    btnLib.style.color       = tab === 'lib'  ? '#1e293b' : '#475569';
+    btnList.style.background = tab === 'list' ? '#f59e0b' : '#f8fafc';
+    btnList.style.color      = tab === 'list' ? '#1e293b' : '#475569';
+}
+
+async function mobileTapAdd(songId, songEl) {
+    var zone = document.querySelector('.songs-drop-zone');
+    if (!zone) return;
+    var roundId = zone.dataset.roundId || null;
+    var data = await apiPost('/setlists/' + SETLIST_ID + '/songs', {
+        song_id: parseInt(songId),
+        round_id: roundId ? parseInt(roundId) : null
+    });
+    if (data.error) { alert(data.error); return; }
+    if (data.id) {
+        var el = buildEntryEl(data);
+        var hint = zone.querySelector('.drop-hint');
+        if (hint) zone.insertBefore(el, hint); else zone.appendChild(el);
+        updateTotals();
+        markLibrarySong(songEl, true);
+        showTab('list');
+    }
+}
+
+// Init mobile layout
+if (window.innerWidth < 768 && CAN_EDIT) {
+    var _tabs   = document.getElementById('mob-tabs');
+    var _layout = document.getElementById('main-layout');
+    var _lib    = document.getElementById('panel-lib');
+    var _list   = document.getElementById('panel-list');
+    if (_tabs)   { _tabs.style.display = 'flex'; }
+    if (_layout) { _layout.style.cssText = 'display:block;height:auto;'; }
+    if (_lib)    { _lib.style.cssText   = 'width:100%;height:calc(100vh - 230px);flex-direction:column;background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;'; }
+    if (_list)   { _list.style.cssText  = 'width:100%;height:calc(100vh - 230px);flex-direction:column;overflow:hidden;'; }
+    showTab('lib');
+}
+
+initLibraryMarkers();
 </script>
 {{-- ═══════════════ PROJECTION SETTINGS MODAL ═══════════════ --}}
 <div id="proj-settings" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9990;align-items:center;justify-content:center;">
@@ -514,6 +617,12 @@ updateTotals();
 </div>
 
 {{-- ═══════════════ PROJECTION FULLSCREEN ═══════════════ --}}
+<style>
+#proj-content { column-count: 2; column-gap: 80px; padding: 12px 60px 20px; }
+@media (max-width: 700px) {
+    #proj-content { column-count: 1; column-gap: 0; padding: 12px 20px 20px; }
+}
+</style>
 <div id="proj-screen" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;overflow:hidden;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;">
     <div style="position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:9px 20px;z-index:1;">
         <div id="proj-title" style="font-size:0.85rem;font-weight:500;color:rgba(255,255,255,0.35);letter-spacing:0.03em;"></div>
@@ -525,7 +634,7 @@ updateTotals();
                     onmouseout="this.style.color='rgba(255,255,255,0.18)'">✕</button>
         </div>
     </div>
-    <div id="proj-content" style="height:calc(100vh - 42px);padding:12px 60px 20px;color:#fff;line-height:1.5;overflow:hidden;column-count:2;column-gap:80px;column-fill:auto;box-sizing:border-box;"></div>
+    <div id="proj-content" style="height:calc(100vh - 42px);color:#fff;line-height:1.5;overflow:hidden;column-fill:auto;box-sizing:border-box;"></div>
 </div>
 
 <script>
@@ -601,6 +710,19 @@ function updateProjLabelBtns() {
     }
 }
 
+var _projTouchStartX = null;
+
+function projTouchStart(e) {
+    _projTouchStartX = e.touches[0].clientX;
+}
+function projTouchEnd(e) {
+    if (_projTouchStartX === null) return;
+    var dx = e.changedTouches[0].clientX - _projTouchStartX;
+    _projTouchStartX = null;
+    if (Math.abs(dx) < 50) return;
+    projNavigate(dx < 0 ? 1 : -1);
+}
+
 function startProjection() {
     localStorage.setItem('projFontSize', document.getElementById('proj-font-range').value);
     localStorage.setItem('projChords', projShowChords ? '1' : '0');
@@ -612,6 +734,8 @@ function startProjection() {
     screen.style.display = 'block';
     projRender();
     document.addEventListener('keydown', projKeyHandler);
+    screen.addEventListener('touchstart', projTouchStart, { passive: true });
+    screen.addEventListener('touchend', projTouchEnd, { passive: true });
     var el = screen;
     var req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
     if (req) req.call(el).catch(function(){});
@@ -621,6 +745,8 @@ function closeProjection() {
     var screen = document.getElementById('proj-screen');
     screen.style.display = 'none';
     document.removeEventListener('keydown', projKeyHandler);
+    screen.removeEventListener('touchstart', projTouchStart);
+    screen.removeEventListener('touchend', projTouchEnd);
     var exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
     if (exit && (document.fullscreenElement || document.webkitFullscreenElement)) exit.call(document).catch(function(){});
 }
@@ -713,12 +839,14 @@ function projRender() {
     document.getElementById('proj-title').textContent = song.name;
     document.getElementById('proj-counter').textContent = (projIndex + 1) + ' / ' + PROJ_SONGS.length;
     content.innerHTML = projBuildHTML(song);
-    var size = prefFs;
-    content.style.fontSize = size + 'px';
-    while (content.scrollWidth > content.clientWidth && size > 10) {
-        size -= 0.5;
-        content.style.fontSize = size + 'px';
-    }
+    content.style.fontSize = prefFs + 'px';
+    requestAnimationFrame(function() {
+        var size = prefFs;
+        while ((content.scrollWidth > content.clientWidth + 2) && size > 10) {
+            size -= 0.5;
+            content.style.fontSize = size + 'px';
+        }
+    });
 }
 </script>
 @endsection

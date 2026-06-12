@@ -1,62 +1,42 @@
-const CACHE = 'osudy-v2';
+const CACHE = 'osudy-v7';
 
-self.addEventListener('install', e => {
-    e.waitUntil(
-        caches.open(CACHE)
-            .then(c => c.addAll(['/logo.gif']))
-            .then(() => self.skipWaiting())
-    );
-});
+self.addEventListener('install', () => self.skipWaiting());
 
-self.addEventListener('activate', e => {
-    // Vymaž staré cache verzie
-    e.waitUntil(
+self.addEventListener('activate', event => {
+    event.waitUntil(
         caches.keys()
-            .then(keys => Promise.all(
-                keys.filter(k => k !== CACHE).map(k => caches.delete(k))
-            ))
-            .then(() => clients.claim())
+            .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+            .then(() => self.clients.claim())
     );
 });
 
-self.addEventListener('fetch', e => {
-    const req = e.request;
+self.addEventListener('fetch', event => {
+    if (event.request.method !== 'GET') return;
+    const url = new URL(event.request.url);
+    if (url.pathname.startsWith('/api/') ||
+        url.pathname.startsWith('/chat/') ||
+        url.pathname === '/logout' ||
+        url.pathname === '/settings/invisible') return;
 
-    // Len GET požiadavky
-    if (req.method !== 'GET') return;
+    event.respondWith((async () => {
+        const key = event.request.url;
+        const cache = await caches.open(CACHE);
 
-    // Len vlastná doména
-    if (!req.url.startsWith(self.location.origin)) return;
-
-    const url = new URL(req.url);
-
-    // Statické súbory (CSS, JS, fonty, obrázky) — cache first
-    const isStatic = ['style', 'script', 'font', 'image'].includes(req.destination)
-        || url.pathname.startsWith('/build/')
-        || url.pathname.startsWith('/icons/');
-
-    if (isStatic) {
-        e.respondWith(
-            caches.match(req).then(cached => {
-                if (cached) return cached;
-                return fetch(req).then(resp => {
-                    caches.open(CACHE).then(c => c.put(req, resp.clone()));
-                    return resp;
-                });
-            })
-        );
-        return;
-    }
-
-    // HTML stránky — network first, cache fallback
-    e.respondWith(
-        fetch(req)
-            .then(resp => {
-                if (resp.ok) {
-                    caches.open(CACHE).then(c => c.put(req, resp.clone()));
-                }
-                return resp;
-            })
-            .catch(() => caches.match(req))
-    );
+        // 1. Skús sieť
+        try {
+            const fresh = await fetch(event.request);
+            if (fresh && fresh.status === 200) {
+                await cache.put(key, fresh.clone());
+            }
+            return fresh;
+        } catch (_) {
+            // Offline – vráť z cache
+            const cached = await cache.match(key);
+            if (cached) return cached;
+            return new Response(
+                '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:sans-serif;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:16px;text-align:center;padding:24px}</style></head><body><p style="font-size:3rem">📵</p><h2>Offline</h2><p>Táto stránka nebola uložená.<br>Navštívte ju najprv s internetom.</p></body></html>',
+                { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+            );
+        }
+    })());
 });
