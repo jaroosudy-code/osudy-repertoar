@@ -331,8 +331,8 @@ function renderLyrics(text, semitones) {
 
 function transpose(delta) {
     currentOffset = currentOffset + delta;
-    if (currentOffset > 6)  currentOffset -= 12;
-    if (currentOffset < -6) currentOffset += 12;
+    if (currentOffset > 11) currentOffset -= 12;
+    if (currentOffset < -11) currentOffset += 12;
     const display = document.getElementById('offset-display');
     display.textContent = currentOffset === 0 ? '0 (originál)' : (currentOffset > 0 ? '+' : '') + currentOffset;
     document.getElementById('lyrics-container').innerHTML = renderLyrics(rawLyrics, currentOffset);
