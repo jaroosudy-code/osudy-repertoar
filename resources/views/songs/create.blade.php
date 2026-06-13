@@ -243,10 +243,23 @@ function hasUnclosedChord(text) {
     function syncHlHeight() { hl.style.height = ta.clientHeight + 'px'; }
     syncHlHeight();
     if (typeof ResizeObserver !== 'undefined') { new ResizeObserver(syncHlHeight).observe(ta); }
-    ta.addEventListener('input', updateHighlight);
+
+    function isMobile() { return window.innerWidth < 640; }
+    function autoGrowTA() {
+        if (!isMobile()) return;
+        ta.style.overflow = 'hidden';
+        ta.style.height = 'auto';
+        ta.style.height = ta.scrollHeight + 'px';
+    }
+    ta.addEventListener('input', function() {
+        updateHighlight();
+        autoGrowTA();
+    });
     ta.addEventListener('scroll', function() {
         hl.scrollTop = ta.scrollTop;
     });
+    window.addEventListener('resize', autoGrowTA);
+    autoGrowTA();
     updateHighlight();
     ta.closest('form').addEventListener('submit', function(e) {
         if (chordInserting || hasUnclosedChord(ta.value)) {

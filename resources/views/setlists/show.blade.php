@@ -557,7 +557,7 @@ if (window.innerWidth < 768 && CAN_EDIT) {
     if (_layout) { _layout.style.cssText = 'display:block;height:auto;'; }
     if (_lib)    { _lib.style.cssText   = 'width:100%;height:calc(100vh - 230px);flex-direction:column;background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;'; }
     if (_list)   { _list.style.cssText  = 'width:100%;height:calc(100vh - 230px);flex-direction:column;overflow:hidden;'; }
-    showTab('lib');
+    showTab('list');
 }
 
 initLibraryMarkers();
