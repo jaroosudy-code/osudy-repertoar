@@ -51,7 +51,7 @@
         <span id="count-display" class="text-sm text-slate-500 ml-2"></span>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden overflow-x-auto">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden sm:overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-50 border-b border-slate-200">
                 <tr>

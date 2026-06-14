@@ -107,7 +107,7 @@
                             onclick="insertSection('[REFRÉN]')">[REFRÉN]</button>
                 </div>
                 <p class="text-xs text-slate-400 mb-2">Klikni <strong>&lt;CHORD&gt;</strong> → napíš akord → klikni znova pre uzatvorenie &nbsp;|&nbsp; <strong>[SLOHA]</strong> a <strong>[REFRÉN]</strong> označujú sekcie pre premietanie</p>
-                <div style="position:relative;">
+                <div style="position:relative;" id="lyrics-ta-wrapper">
                     <div id="lyrics-highlight" aria-hidden="true"
                          style="position:absolute;top:1px;left:1px;right:17px;
                                 font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;
@@ -116,8 +116,12 @@
                                 overflow:hidden;pointer-events:none;
                                 background:white;color:#1e293b;border-radius:7px;"></div>
                     <textarea name="lyrics" id="lyrics-ta" rows="12"
-                              style="position:relative;z-index:1;background:transparent;color:transparent;caret-color:#1e293b;"
+                              style="position:relative;z-index:1;background:transparent;color:transparent;caret-color:#1e293b;display:block;"
                               class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono text-sm">{{ old('lyrics', $song->lyrics) }}</textarea>
+                    <div id="lyrics-resize-handle" aria-hidden="true"
+                         style="display:none;position:absolute;bottom:3px;right:3px;width:28px;height:28px;
+                                z-index:5;touch-action:none;border-bottom-right-radius:5px;
+                                background:linear-gradient(135deg,transparent 50%,rgba(148,163,184,0.65) 50%);"></div>
                 </div>
 <style>#lyrics-highlight::-webkit-scrollbar{display:none;}</style>
             </div>
@@ -137,6 +141,7 @@
 </div>
 <script>
 var chordInserting = false;
+var isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
 function escHtml(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -206,7 +211,6 @@ function toggleChordInsert() {
     var ta = document.getElementById('lyrics-ta');
     var pos = ta.selectionStart;
     var v = ta.value;
-
     if (!chordInserting) {
         ta.value = v.slice(0, pos) + '<' + v.slice(pos);
         ta.selectionStart = ta.selectionEnd = pos + 1;
@@ -240,24 +244,36 @@ function hasUnclosedChord(text) {
     function syncHlHeight() { hl.style.height = ta.clientHeight + 'px'; }
     syncHlHeight();
     if (typeof ResizeObserver !== 'undefined') { new ResizeObserver(syncHlHeight).observe(ta); }
-
-    function isMobile() { return window.innerWidth < 640; }
-    function autoGrowTA() {
-        if (!isMobile()) return;
-        ta.style.overflow = 'hidden';
-        ta.style.height = 'auto';
-        ta.style.height = ta.scrollHeight + 'px';
-    }
-    ta.addEventListener('input', function() {
-        updateHighlight();
-        autoGrowTA();
-    });
-    ta.addEventListener('scroll', function() {
-        hl.scrollTop = ta.scrollTop;
-    });
-    window.addEventListener('resize', autoGrowTA);
-    autoGrowTA();
+    ta.addEventListener('input', updateHighlight);
+    ta.addEventListener('scroll', function() { hl.scrollTop = ta.scrollTop; });
     updateHighlight();
+
+    if (isTouchDevice) {
+        ta.style.overflow = 'auto';
+        ta.style.resize = 'none';
+        hl.style.right = '1px';
+
+        var rh = document.getElementById('lyrics-resize-handle');
+        if (rh) {
+            rh.style.display = 'block';
+            rh.addEventListener('touchstart', function(e) {
+                var startY = e.touches[0].clientY;
+                var startH = ta.offsetHeight;
+                e.preventDefault();
+                function onMove(ev) {
+                    ta.style.height = Math.max(120, startH + ev.touches[0].clientY - startY) + 'px';
+                    ev.preventDefault();
+                }
+                function onEnd() {
+                    document.removeEventListener('touchmove', onMove);
+                    document.removeEventListener('touchend', onEnd);
+                }
+                document.addEventListener('touchmove', onMove, {passive: false});
+                document.addEventListener('touchend', onEnd);
+            }, {passive: false});
+        }
+    }
+
     ta.closest('form').addEventListener('submit', function(e) {
         if (chordInserting || hasUnclosedChord(ta.value)) {
             e.preventDefault();

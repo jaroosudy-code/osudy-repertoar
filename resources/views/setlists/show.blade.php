@@ -564,7 +564,7 @@ initLibraryMarkers();
 </script>
 {{-- ═══════════════ PROJECTION SETTINGS MODAL ═══════════════ --}}
 <div id="proj-settings" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9990;align-items:center;justify-content:center;">
-    <div style="background:#1e293b;border-radius:16px;padding:32px;width:420px;max-width:92vw;color:#fff;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    <div style="background:#1e293b;border-radius:16px;padding:32px;width:420px;max-width:92vw;color:#fff;box-shadow:0 20px 60px rgba(0,0,0,0.6);max-height:90vh;overflow-y:auto;" id="proj-settings-inner">
         <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:24px;color:#f1f5f9;">⚙ Nastavenia premietania</h2>
 
         <div style="margin-bottom:20px;">
@@ -621,6 +621,11 @@ initLibraryMarkers();
 #proj-content { column-count: 2; column-gap: 80px; padding: 12px 60px 20px; }
 @media (max-width: 700px) {
     #proj-content { column-count: 1; column-gap: 0; padding: 12px 20px 20px; }
+}
+@media (max-height: 560px) {
+    #proj-settings-inner { padding: 16px !important; }
+    #proj-settings-inner h2 { font-size: 1rem !important; margin-bottom: 12px !important; }
+    #proj-settings-inner > div { margin-bottom: 12px !important; }
 }
 </style>
 <div id="proj-screen" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;overflow:hidden;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;">
@@ -749,19 +754,30 @@ function closeProjection() {
     screen.removeEventListener('touchend', projTouchEnd);
     var exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
     if (exit && (document.fullscreenElement || document.webkitFullscreenElement)) exit.call(document).catch(function(){});
+    if (window.screen.orientation && window.screen.orientation.unlock) window.screen.orientation.unlock();
 }
 
-document.addEventListener('fullscreenchange', function() {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        var screen = document.getElementById('proj-screen');
-        if (screen && screen.style.display !== 'none') closeProjection();
+function _onFullscreenEnter() {
+    if (window.screen.orientation && window.screen.orientation.lock) {
+        window.screen.orientation.lock('landscape').catch(function(){});
     }
+    projRender();
+}
+function _onFullscreenExit() {
+    var s = document.getElementById('proj-screen');
+    if (s && s.style.display !== 'none') closeProjection();
+}
+document.addEventListener('fullscreenchange', function() {
+    if (document.fullscreenElement || document.webkitFullscreenElement) { _onFullscreenEnter(); }
+    else { _onFullscreenExit(); }
 });
 document.addEventListener('webkitfullscreenchange', function() {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        var screen = document.getElementById('proj-screen');
-        if (screen && screen.style.display !== 'none') closeProjection();
-    }
+    if (document.fullscreenElement || document.webkitFullscreenElement) { _onFullscreenEnter(); }
+    else { _onFullscreenExit(); }
+});
+window.addEventListener('resize', function() {
+    var screen = document.getElementById('proj-screen');
+    if (screen && screen.style.display !== 'none') projRender();
 });
 
 function projKeyHandler(e) {
