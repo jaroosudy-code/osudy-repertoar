@@ -206,10 +206,9 @@
             ♩ Skryť akordy
         </button>
         <div id="transpozicia-row" style="display:flex; align-items:center; gap:12px;">
-            <span style="font-size:0.875rem; font-weight:500; color:#475569;">Transpozícia:</span>
             <button onclick="transpose(-1)"
                     style="width:32px;height:32px;border-radius:50%;background:#e2e8f0;border:none;font-size:1.1rem;font-weight:bold;color:#334155;cursor:pointer;">−</button>
-            <span id="offset-display" style="font-size:0.875rem;font-family:monospace;color:#475569;min-width:80px;text-align:center;">0 (originál)</span>
+            <span id="offset-display" style="font-size:0.875rem;font-family:monospace;color:#475569;min-width:80px;text-align:center;">0</span>
             <button onclick="transpose(+1)"
                     style="width:32px;height:32px;border-radius:50%;background:#e2e8f0;border:none;font-size:1.1rem;font-weight:bold;color:#334155;cursor:pointer;">+</button>
         </div>
@@ -334,7 +333,7 @@ function transpose(delta) {
     if (currentOffset > 11) currentOffset -= 12;
     if (currentOffset < -11) currentOffset += 12;
     const display = document.getElementById('offset-display');
-    display.textContent = currentOffset === 0 ? '0 (originál)' : (currentOffset > 0 ? '+' : '') + currentOffset;
+    display.textContent = (currentOffset > 0 ? '+' : '') + currentOffset;
     document.getElementById('lyrics-container').innerHTML = renderLyrics(rawLyrics, currentOffset);
 }
 
