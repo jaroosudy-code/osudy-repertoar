@@ -11,9 +11,10 @@
     <meta name="apple-mobile-web-app-title" content="Repertoár">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     @vite(['resources/css/app.css'])
+    <script>if (localStorage.getItem('darkMode') === '1') document.documentElement.classList.add('dark');</script>
     <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
 </head>
-<body class="bg-slate-900 min-h-screen flex items-center justify-center px-4">
+<body class="bg-slate-900 dark:bg-slate-950 min-h-screen flex items-center justify-center px-4">
 
 <div class="w-full max-w-sm">
     <div class="text-center mb-8">
@@ -24,14 +25,14 @@
         <p class="text-slate-400 mt-1 text-sm">Prihlás sa k ním svojím emailom</p>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-2xl p-8">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8">
         <form method="POST" action="{{ route('login') }}">
             @csrf
             <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email</label>
                 <input type="email" name="email" inputmode="email" autocomplete="email"
                        value="{{ old('email') }}" autofocus
-                       class="w-full border border-slate-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-400
+                       class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-400
                               @error('email') border-red-400 @enderror"
                        placeholder="tvoj@email.sk">
                 @error('email')
@@ -40,13 +41,13 @@
             </div>
 
             <div class="mb-6">
-                <label class="block text-sm font-medium text-slate-700 mb-2">Heslo</label>
-                <div class="flex items-center border border-slate-300 rounded-lg focus-within:ring-2 focus-within:ring-amber-400 @error('password') border-red-400 @enderror">
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Heslo</label>
+                <div class="flex items-center border border-slate-300 dark:border-slate-600 rounded-lg focus-within:ring-2 focus-within:ring-amber-400 @error('password') border-red-400 @enderror">
                     <input type="password" name="password" id="pw-login" autocomplete="current-password"
-                           class="flex-1 px-4 py-3 text-base bg-transparent outline-none rounded-l-lg"
+                           class="flex-1 px-4 py-3 text-base bg-transparent dark:text-slate-100 outline-none rounded-l-lg"
                            placeholder="••••••••">
                     <button type="button" onclick="togglePw('pw-login', this)"
-                            class="px-3 text-slate-400 hover:text-slate-600 outline-none focus:outline-none transition-colors shrink-0"
+                            class="px-3 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 outline-none focus:outline-none transition-colors shrink-0"
                             tabindex="-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                             <path class="eye-open" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
@@ -63,7 +64,7 @@
 
             <div class="flex items-center mb-6">
                 <input type="checkbox" id="remember" name="remember" class="w-4 h-4 accent-amber-500">
-                <label for="remember" class="ml-2 text-sm text-slate-600">Zapamätať ma</label>
+                <label for="remember" class="ml-2 text-sm text-slate-600 dark:text-slate-400">Zapamätať ma</label>
             </div>
 
             <button type="submit"
