@@ -44,7 +44,7 @@
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" name="tempo" value="slow" {{ old('tempo') === 'slow' ? 'checked' : '' }}
                                class="accent-amber-500">
-                        <span class="px-2 py-0.5 rounded-full text-sm bg-orange-100 text-orange-700">Pomala</span>
+                        <span class="px-2 py-0.5 rounded-full text-sm bg-orange-100 text-orange-700">Pomalá</span>
                     </label>
                 </div>
             </div>

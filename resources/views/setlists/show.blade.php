@@ -480,7 +480,7 @@ const libTempo = document.getElementById('lib-tempo');
 const libType = document.getElementById('lib-type');
 
 function norm(str) {
-    return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
 function filterLibrary() {

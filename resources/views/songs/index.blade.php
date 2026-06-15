@@ -14,7 +14,6 @@
 
 <style>
 @media (max-width: 639px) {
-    .col-desktop { display: none; }
     .act-desktop { display: none !important; }
     .act-mobile  { display: inline-flex !important; }
 }
@@ -51,16 +50,16 @@
         <span id="count-display" class="text-sm text-slate-500 dark:text-slate-400 ml-2"></span>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden sm:overflow-x-auto">
-        <table class="w-full text-sm">
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-x-auto">
+        <table class="w-full text-sm min-w-max">
             <thead class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
                 <tr>
                     <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 w-6"></th>
                     <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Názov</th>
-                    <th class="col-desktop text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Čas</th>
+                    <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">BPM</th>
+                    <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Čas</th>
                     <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Tempo</th>
-                    <th class="col-desktop text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">BPM</th>
-                    <th class="col-desktop text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Typ</th>
+                    <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Typ</th>
                     <th class="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-400"></th>
                 </tr>
             </thead>
@@ -77,15 +76,7 @@
                     <td class="px-4 py-3 font-medium">
                         <a href="{{ route('songs.show', $song) }}" class="text-slate-800 dark:text-slate-200 hover:text-amber-600 transition-colors">{{ $song->name }}</a>
                     </td>
-                    <td class="col-desktop px-4 py-3 text-slate-600 dark:text-slate-400 font-mono">{{ $song->duration_formatted }}</td>
-                    <td class="px-4 py-3">
-                        @if($song->tempo === 'fast')
-                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Rýchla</span>
-                        @else
-                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">Pomalá</span>
-                        @endif
-                    </td>
-                    <td class="col-desktop px-4 py-3 font-mono">
+                    <td class="px-4 py-3 font-mono">
                         @if($song->bpm)
                         <button onclick="openMModal({{ $song->bpm }}, {{ json_encode($song->name) }})"
                                 class="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 hover:underline transition-colors cursor-pointer font-mono">
@@ -93,7 +84,15 @@
                         </button>
                         @endif
                     </td>
-                    <td class="col-desktop px-4 py-3">
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400 font-mono">{{ $song->duration_formatted }}</td>
+                    <td class="px-4 py-3">
+                        @if($song->tempo === 'fast')
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Rýchla</span>
+                        @else
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">Pomalá</span>
+                        @endif
+                    </td>
+                    <td class="px-4 py-3">
                         @if($song->type === 'own')
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Osudy</span>
                         @else
@@ -144,7 +143,7 @@ const filterType = document.getElementById('filter-type');
 const countDisplay = document.getElementById('count-display');
 
 function norm(str) {
-    return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
 function applyFilters() {
