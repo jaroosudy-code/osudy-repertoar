@@ -15,6 +15,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <script>if (localStorage.getItem('darkMode') === '1') document.documentElement.classList.add('dark');</script>
     <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
     // Stránka sa sama uloží do cache pri každom načítaní online
@@ -32,6 +33,15 @@
     </script>
     <style>
         html, body { overflow-x: hidden; max-width: 100%; }
+        .dark #chat-popup { background:#1e293b !important; border-color:#334155 !important; }
+        .dark #cp-list > div > div[style*="flex:1"] button { border-color:#334155 !important; }
+        .dark #cp-list > div > div[style*="flex:1"] button p { color:#e2e8f0 !important; }
+        .dark #cp-list > div > div[style*="flex:1"] button p:last-child { color:#94a3b8 !important; }
+        .dark #cp-messages-box { background:#1e293b !important; }
+        .dark #cp-messages-box div[style*="background:#f1f5f9"] { background:#334155 !important; color:#e2e8f0 !important; }
+        .dark #cp-form input { background:#0f172a !important; border-color:#475569 !important; color:#e2e8f0 !important; }
+        .dark #cp-form input::placeholder { color:#64748b !important; }
+        .dark div[style*="border-top:1px solid #e2e8f0"] { border-color:#334155 !important; }
         @media (max-width: 639px) {
             .nav-settings-text { display: none; }
             #nav-inner { gap: 0.15rem; padding-left: 0.35rem; padding-right: 0.35rem; }
@@ -41,9 +51,9 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen font-sans">
+<body class="bg-slate-100 dark:bg-slate-900 min-h-screen font-sans transition-colors">
 
-<nav class="bg-slate-900 text-white shadow-lg">
+<nav class="bg-slate-900 dark:bg-slate-950 text-white shadow-lg">
     <div id="nav-inner" class="max-w-7xl mx-auto px-4 flex items-center gap-8 h-14">
         <a href="{{ route('songs.index') }}" class="shrink-0">
             <img src="/logo.gif" alt="Osudy" class="nav-logo h-10 w-auto">
@@ -111,19 +121,19 @@
 
 <main class="max-w-7xl mx-auto px-4 py-6">
     @if(session('success'))
-        <div class="mb-4 bg-green-50 border border-green-300 text-green-800 px-4 py-3 rounded-lg flex justify-between items-start">
+        <div class="mb-4 bg-green-50 dark:bg-green-950 border border-green-300 dark:border-green-800 text-green-800 dark:text-green-200 px-4 py-3 rounded-lg flex justify-between items-start">
             <span>{{ session('success') }}</span>
-            <button onclick="this.parentElement.remove()" class="ml-4 text-green-600 hover:text-green-800 font-bold">×</button>
+            <button onclick="this.parentElement.remove()" class="ml-4 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 font-bold">×</button>
         </div>
     @endif
     @if(session('error'))
-        <div class="mb-4 bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg flex justify-between items-start">
+        <div class="mb-4 bg-red-50 dark:bg-red-950 border border-red-300 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg flex justify-between items-start">
             <span>{{ session('error') }}</span>
-            <button onclick="this.parentElement.remove()" class="ml-4 text-red-600 hover:text-red-800 font-bold">×</button>
+            <button onclick="this.parentElement.remove()" class="ml-4 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 font-bold">×</button>
         </div>
     @endif
     @if($errors->any())
-        <div class="mb-4 bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg">
+        <div class="mb-4 bg-red-50 dark:bg-red-950 border border-red-300 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg">
             <ul class="list-disc list-inside">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -141,7 +151,7 @@
 <div id="chat-widget" style="position:fixed;bottom:20px;right:20px;z-index:1000;font-family:sans-serif;display:flex;flex-direction:column;align-items:flex-end;">
 
     {{-- Chat panel (hidden by default) --}}
-    <div id="chat-popup" style="display:none;width:320px;height:460px;background:#fff;border-radius:12px;
+    <div id="chat-popup" style="display:none;width:320px;height:min(460px, calc(100dvh - 90px));background:#fff;border-radius:12px;
          box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid #e2e8f0;
          flex-direction:column;overflow:hidden;margin-bottom:12px;">
 

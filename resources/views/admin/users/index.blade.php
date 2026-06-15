@@ -4,12 +4,12 @@
 @section('content')
 <div class="flex items-center justify-between mb-6 gap-3 flex-wrap">
     <div>
-        <h1 class="text-2xl font-bold text-slate-800">Používatelia</h1>
-        <p class="text-sm text-slate-500 mt-0.5">Spravuj prístupy členov kapely</p>
+        <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Používatelia</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Spravuj prístupy členov kapely</p>
     </div>
     <div class="flex gap-2 flex-wrap">
         <a href="{{ route('admin.roles.index') }}"
-           class="px-4 py-2 border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium transition-colors">
+           class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm font-medium transition-colors">
             Správa rolí
         </a>
         <a href="{{ route('admin.users.create') }}"
@@ -19,7 +19,7 @@
     </div>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+<div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
     @if($users->isEmpty())
         <div class="text-center py-12 text-slate-400">
             <p>Zatiaľ žiadni používatelia.</p>
@@ -27,24 +27,24 @@
     @else
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="bg-slate-50 border-b border-slate-200">
+                <thead class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
                     <tr>
-                        <th class="text-left px-4 py-3 font-semibold text-slate-600">Meno</th>
-                        <th class="text-left px-4 py-3 font-semibold text-slate-600">Email</th>
-                        <th class="text-left px-4 py-3 font-semibold text-slate-600">Rola</th>
-                        <th class="text-right px-4 py-3 font-semibold text-slate-600"></th>
+                        <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Meno</th>
+                        <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Email</th>
+                        <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Rola</th>
+                        <th class="text-right px-4 py-3 font-semibold text-slate-600 dark:text-slate-400"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($users as $user)
-                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors {{ $user->id === auth()->id() ? 'bg-amber-50' : '' }}">
-                        <td class="px-4 py-3 font-medium text-slate-800">
+                    <tr class="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors {{ $user->id === auth()->id() ? 'bg-amber-50 dark:bg-amber-900/20' : '' }}">
+                        <td class="px-4 py-3 font-medium text-slate-800 dark:text-slate-200">
                             {{ $user->name }}
                             @if($user->id === auth()->id())
                                 <span class="ml-1 text-xs text-amber-600">(ty)</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-slate-600">{{ $user->email }}</td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $user->email }}</td>
                         <td class="px-4 py-3">
                             @if($user->role)
                                 <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ $user->role->badgeClass() }}">
@@ -56,11 +56,11 @@
                         </td>
                         <td class="px-4 py-3 text-right whitespace-nowrap">
                             <a href="{{ route('admin.users.edit', $user) }}"
-                               class="text-slate-500 hover:text-amber-600 font-medium transition-colors mr-3">Upraviť</a>
+                               class="text-slate-500 dark:text-slate-400 hover:text-amber-600 font-medium transition-colors mr-3">Upraviť</a>
                             @if($user->id !== auth()->id())
                             <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="inline delete-confirm-form" data-name="{{ $user->name }}">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="text-slate-500 hover:text-red-600 font-medium transition-colors">Zmazať</button>
+                                <button type="submit" class="text-slate-500 dark:text-slate-400 hover:text-red-600 font-medium transition-colors">Zmazať</button>
                             </form>
                             @endif
                         </td>

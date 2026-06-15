@@ -158,8 +158,8 @@
 <div>
     {{-- Header --}}
     <div class="flex items-center gap-3 mb-4 no-print">
-        <a href="{{ route('songs.index') }}" class="text-slate-400 hover:text-slate-600">← Späť</a>
-        <h1 class="text-2xl font-bold text-slate-800 flex-1">{{ $song->name }}</h1>
+        <a href="{{ route('songs.index') }}" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">← Späť</a>
+        <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100 flex-1">{{ $song->name }}</h1>
         @if($song->lyrics)
         <button onclick="window.print()"
                 style="padding:6px 16px; border-radius:8px; background:#0f172a; color:white; border:none; font-size:0.875rem; cursor:pointer;">
@@ -168,15 +168,15 @@
         @endif
         @if(auth()->user()->hasPermission('songs.edit'))
         <a href="{{ route('songs.edit', $song) }}"
-           class="px-4 py-1.5 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 text-sm transition-colors">
+           class="px-4 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 text-sm transition-colors">
             Upraviť
         </a>
         @endif
     </div>
 
     {{-- Info lišta --}}
-    <div class="flex flex-wrap gap-3 mb-6 text-sm text-slate-500 no-print">
-        <span class="font-mono font-medium text-slate-700">{{ $song->duration_formatted }}</span>
+    <div class="flex flex-wrap gap-3 mb-6 text-sm text-slate-500 dark:text-slate-400 no-print">
+        <span class="font-mono font-medium text-slate-700 dark:text-slate-300">{{ $song->duration_formatted }}</span>
         @if($song->tempo === 'fast')
             <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Rýchla</span>
         @else
@@ -255,7 +255,7 @@
         </div>
     </div>
     @else
-    <div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400">
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 text-center text-slate-400">
         <p>Táto pieseň zatiaľ nemá text s akordmi.</p>
         @if(auth()->user()->hasPermission('songs.edit'))
         <a href="{{ route('songs.edit', $song) }}" class="text-amber-500 hover:underline mt-2 inline-block">Pridať text →</a>
@@ -264,8 +264,8 @@
     @endif
 
     @if($song->notes)
-    <div class="mt-4 bg-white rounded-xl border border-slate-200 p-4 text-sm text-slate-600 no-print">
-        <span class="font-medium text-slate-700">Poznámky:</span> {{ $song->notes }}
+    <div class="mt-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 text-sm text-slate-600 dark:text-slate-400 no-print">
+        <span class="font-medium text-slate-700 dark:text-slate-300">Poznámky:</span> {{ $song->notes }}
     </div>
     @endif
 </div>

@@ -25,8 +25,8 @@
 {{-- Header --}}
 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
     <div class="flex items-center gap-3">
-        <a href="{{ route('setlists.index') }}" class="text-slate-400 hover:text-slate-600">← Späť</a>
-        <h1 class="text-xl font-bold text-slate-800">{{ $setlist->name }}</h1>
+        <a href="{{ route('setlists.index') }}" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">← Späť</a>
+        <h1 class="text-xl font-bold text-slate-800 dark:text-slate-100">{{ $setlist->name }}</h1>
         <span class="px-2 py-0.5 rounded-full text-xs font-medium
             {{ $isEntertainment ? 'bg-pink-100 text-pink-700' : 'bg-indigo-100 text-indigo-700' }}">
             {{ $isEntertainment ? '🎉 Zábava' : '🎤 Koncert' }}
@@ -69,18 +69,18 @@
 
 @if($canEdit)
     {{-- LEFT: Song Library --}}
-    <div id="panel-lib" class="w-72 shrink-0 flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="p-3 border-b border-slate-200 bg-slate-50">
-            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Knižnica piesní</p>
+    <div id="panel-lib" class="w-72 shrink-0 flex flex-col bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="p-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Knižnica piesní</p>
             <input type="text" id="lib-search" placeholder="Hľadať…"
-                   class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                   class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
             <div class="flex gap-1 mt-2">
-                <select id="lib-tempo" class="flex-1 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-amber-400">
+                <select id="lib-tempo" class="flex-1 border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-amber-400">
                     <option value="">Všetky</option>
                     <option value="fast">Rýchle</option>
                     <option value="slow">Pomalé</option>
                 </select>
-                <select id="lib-type" class="flex-1 border border-slate-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-amber-400">
+                <select id="lib-type" class="flex-1 border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-amber-400">
                     <option value="">Všetky</option>
                     <option value="own">Vlastné</option>
                     <option value="cover">Covery</option>
@@ -89,7 +89,7 @@
         </div>
         <div id="song-library" class="flex-1 overflow-y-auto p-2 space-y-1">
             @foreach($allSongs as $song)
-            <div class="library-song flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 cursor-grab active:cursor-grabbing transition-colors select-none"
+            <div class="library-song flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:border-amber-300 dark:hover:border-amber-700 cursor-grab active:cursor-grabbing transition-colors select-none"
                  data-song-id="{{ $song->id }}"
                  data-duration="{{ $song->duration_seconds }}"
                  data-name="{{ strtolower($song->name) }}"
@@ -98,8 +98,8 @@
                  data-in-playlist="{{ in_array($song->id, $playlistSongIds) ? '1' : '0' }}">
                 <span class="inline-block w-3 h-3 rounded-full shrink-0 border border-slate-300"
                       style="background-color: {{ $song->color }}"></span>
-                <span class="flex-1 text-sm font-medium text-slate-700 truncate">{{ $song->name }}</span>
-                <span class="text-xs text-slate-400 font-mono shrink-0">{{ $song->duration_formatted }}</span>
+                <span class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{{ $song->name }}</span>
+                <span class="text-xs text-slate-400 dark:text-slate-500 font-mono shrink-0">{{ $song->duration_formatted }}</span>
                 <span class="song-in-playlist" style="display:none;color:#16a34a;font-size:1.1rem;font-weight:bold;flex-shrink:0;">✓</span>
                 <button class="mob-add-btn" style="display:none;flex-shrink:0;width:28px;height:28px;border-radius:50%;background:#f59e0b;color:#fff;border:none;font-size:1.2rem;font-weight:bold;cursor:pointer;align-items:center;justify-content:center;line-height:1;"
                         onclick="event.stopPropagation();mobileTapAdd({{ $song->id }},this.closest('.library-song'))">+</button>
@@ -126,11 +126,11 @@
             {{-- Rounds --}}
             <div id="rounds-container" data-setlist-id="{{ $setlist->id }}">
                 @foreach($rounds as $round)
-                <div class="round-block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+                <div class="round-block bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden"
                      data-round-id="{{ $round->id }}">
-                    <div class="flex items-center gap-3 px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+                    <div class="flex items-center gap-3 px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
                         @if($canEdit)<span class="drag-round-handle cursor-grab text-slate-400 hover:text-slate-600 text-xl">⠿</span>@endif
-                        <span class="round-name font-semibold text-slate-700 flex-1"
+                        <span class="round-name font-semibold text-slate-700 dark:text-slate-300 flex-1"
                               {{ $canEdit ? 'contenteditable=true' : '' }}
                               data-round-id="{{ $round->id }}">{{ $round->name }}</span>
                         <span class="round-time font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">0:00:00</span>
@@ -144,23 +144,23 @@
                          data-round-id="{{ $round->id }}"
                          data-setlist-id="{{ $setlist->id }}">
                         @foreach($round->setlistSongs as $entry)
-                        <div class="song-entry flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white {{ $canEdit ? 'cursor-grab active:cursor-grabbing' : '' }} select-none"
+                        <div class="song-entry flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 {{ $canEdit ? 'cursor-grab active:cursor-grabbing' : '' }} select-none"
                              data-entry-id="{{ $entry->id }}"
                              data-song-id="{{ $entry->song->id }}"
                              data-duration="{{ $entry->song->duration_seconds }}">
-                            @if($canEdit)<span class="drag-handle text-slate-300 hover:text-slate-500 cursor-grab text-lg">⠿</span>@endif
-                            <span class="inline-block w-3 h-3 rounded-full shrink-0 border border-slate-300"
+                            @if($canEdit)<span class="drag-handle text-slate-300 dark:text-slate-600 hover:text-slate-500 cursor-grab text-lg">⠿</span>@endif
+                            <span class="inline-block w-3 h-3 rounded-full shrink-0 border border-slate-300 dark:border-slate-600"
                                   style="background-color: {{ $entry->song->color }}"></span>
-                            <a href="{{ route('songs.show', $entry->song) }}" class="flex-1 text-sm font-medium text-slate-700 truncate hover:text-amber-600">{{ $entry->song->name }}</a>
-                            <span class="text-xs font-mono text-slate-400 shrink-0">{{ $entry->song->duration_formatted }}</span>
+                            <a href="{{ route('songs.show', $entry->song) }}" class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300 truncate hover:text-amber-600">{{ $entry->song->name }}</a>
+                            <span class="text-xs font-mono text-slate-400 dark:text-slate-500 shrink-0">{{ $entry->song->duration_formatted }}</span>
                             @if($entry->song->tempo === 'fast')
-                                <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">⚡</span>
+                                <span class="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded">⚡</span>
                             @else
-                                <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">🐢</span>
+                                <span class="text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded">🐢</span>
                             @endif
                             @if($canEdit)
                             <button onclick="removeEntry({{ $entry->id }}, this)"
-                                    class="text-slate-300 hover:text-red-500 transition-colors ml-1 text-lg leading-none shrink-0">×</button>
+                                    class="text-slate-300 dark:text-slate-600 hover:text-red-500 transition-colors ml-1 text-lg leading-none shrink-0">×</button>
                             @endif
                         </div>
                         @endforeach
@@ -170,7 +170,7 @@
                         </div>
                         @endif
                     </div>
-                    <div class="flex items-center gap-3 px-4 py-2 bg-slate-50 border-t border-slate-100">
+                    <div class="flex items-center gap-3 px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700">
                         @if($canEdit)
                         <span class="text-xs text-slate-400">Prestávka po kole:</span>
                         <input type="number" min="0" max="120" value="{{ $round->break_after_minutes }}"
@@ -201,23 +201,23 @@
                 <span id="grand-total-music" class="font-mono font-bold text-amber-400 text-lg">0:00:00</span>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-                    <span class="font-semibold text-slate-700">Program koncertu</span>
+            <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div class="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                    <span class="font-semibold text-slate-700 dark:text-slate-300">Program koncertu</span>
                 </div>
                 <div class="{{ $canEdit ? 'songs-drop-zone' : '' }} p-2 min-h-[120px] space-y-1"
                      data-round-id=""
                      data-setlist-id="{{ $setlist->id }}">
                     @foreach($entries ?? [] as $entry)
-                    <div class="song-entry flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white {{ $canEdit ? 'cursor-grab active:cursor-grabbing hover:border-slate-300' : '' }} select-none"
+                    <div class="song-entry flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 {{ $canEdit ? 'cursor-grab active:cursor-grabbing hover:border-slate-300 dark:hover:border-slate-600' : '' }} select-none"
                          data-entry-id="{{ $entry->id }}"
                          data-song-id="{{ $entry->song->id }}"
                          data-duration="{{ $entry->song->duration_seconds }}">
                         @if($canEdit)<span class="drag-handle text-slate-300 hover:text-slate-500 cursor-grab text-lg">⠿</span>@endif
                         <span class="inline-block w-3 h-3 rounded-full shrink-0 border border-slate-300"
                               style="background-color: {{ $entry->song->color }}"></span>
-                        <a href="{{ route('songs.show', $entry->song) }}" class="flex-1 text-sm font-medium text-slate-700 truncate hover:text-amber-600">{{ $entry->song->name }}</a>
-                        <span class="text-xs font-mono text-slate-400 shrink-0">{{ $entry->song->duration_formatted }}</span>
+                        <a href="{{ route('songs.show', $entry->song) }}" class="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300 truncate hover:text-amber-600">{{ $entry->song->name }}</a>
+                        <span class="text-xs font-mono text-slate-400 dark:text-slate-500 shrink-0">{{ $entry->song->duration_formatted }}</span>
                         @if($entry->song->tempo === 'fast')
                             <span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">⚡</span>
                         @else
@@ -514,6 +514,10 @@ function initLibraryMarkers() {
 }
 
 // ── Mobile tabs ──────────────────────────────────────────────
+var _mobDark = document.documentElement.classList.contains('dark');
+var _tabInactiveBg    = _mobDark ? '#0f172a' : '#f8fafc';
+var _tabInactiveColor = _mobDark ? '#94a3b8' : '#475569';
+
 function showTab(tab) {
     var lib  = document.getElementById('panel-lib');
     var list = document.getElementById('panel-list');
@@ -522,10 +526,10 @@ function showTab(tab) {
     if (!lib || !list) return;
     lib.style.display  = tab === 'lib'  ? 'flex' : 'none';
     list.style.display = tab === 'list' ? 'flex' : 'none';
-    btnLib.style.background  = tab === 'lib'  ? '#f59e0b' : '#f8fafc';
-    btnLib.style.color       = tab === 'lib'  ? '#1e293b' : '#475569';
-    btnList.style.background = tab === 'list' ? '#f59e0b' : '#f8fafc';
-    btnList.style.color      = tab === 'list' ? '#1e293b' : '#475569';
+    btnLib.style.background  = tab === 'lib'  ? '#f59e0b' : _tabInactiveBg;
+    btnLib.style.color       = tab === 'lib'  ? '#1e293b' : _tabInactiveColor;
+    btnList.style.background = tab === 'list' ? '#f59e0b' : _tabInactiveBg;
+    btnList.style.color      = tab === 'list' ? '#1e293b' : _tabInactiveColor;
 }
 
 async function mobileTapAdd(songId, songEl) {
@@ -553,10 +557,20 @@ if (window.innerWidth < 768 && CAN_EDIT) {
     var _layout = document.getElementById('main-layout');
     var _lib    = document.getElementById('panel-lib');
     var _list   = document.getElementById('panel-list');
-    if (_tabs)   { _tabs.style.display = 'flex'; }
+    var _libBg     = _mobDark ? '#1e293b' : '#fff';
+    var _libBorder = _mobDark ? '#334155' : '#e2e8f0';
+    if (_tabs) {
+        _tabs.style.display = 'flex';
+        _tabs.style.borderColor = _libBorder;
+        var _tabList = document.getElementById('tab-btn-list');
+        if (_tabList) { _tabList.style.background = _tabInactiveBg; _tabList.style.color = _tabInactiveColor; }
+    }
     if (_layout) { _layout.style.cssText = 'display:block;height:auto;'; }
-    if (_lib)    { _lib.style.cssText   = 'width:100%;height:calc(100vh - 230px);flex-direction:column;background:#fff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;'; }
-    if (_list)   { _list.style.cssText  = 'width:100%;height:calc(100vh - 230px);flex-direction:column;overflow:hidden;'; }
+    if (_lib)    { _lib.style.cssText = 'width:100%;height:calc(100vh - 230px);flex-direction:column;background:' + _libBg + ';border-radius:12px;border:1px solid ' + _libBorder + ';overflow:hidden;'; }
+    if (_list)   { _list.style.cssText = 'width:100%;height:calc(100vh - 230px);flex-direction:column;overflow:hidden;'; }
+    // Padding dole kvôli chat bublina
+    var _songLib = document.getElementById('song-library');
+    if (_songLib) _songLib.style.paddingBottom = '80px';
     showTab('list');
 }
 
