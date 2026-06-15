@@ -13,6 +13,26 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <script>if(localStorage.getItem('app_dark')==='1')document.documentElement.classList.add('dark');</script>
+    <style>
+    html.dark body { background:#0f172a !important; color:#e2e8f0; }
+    html.dark .bg-white { background:#1e293b !important; }
+    html.dark .bg-slate-100 { background:#0f172a !important; }
+    html.dark .bg-slate-50 { background:#0f172a !important; }
+    html.dark .border-slate-200 { border-color:#334155 !important; }
+    html.dark .border-slate-100 { border-color:#1e293b !important; }
+    html.dark .text-slate-800, html.dark .text-slate-900 { color:#f1f5f9 !important; }
+    html.dark .text-slate-700 { color:#e2e8f0 !important; }
+    html.dark .text-slate-600 { color:#cbd5e1 !important; }
+    html.dark .text-slate-500 { color:#94a3b8 !important; }
+    html.dark .text-slate-400 { color:#64748b !important; }
+    html.dark .hover\:bg-slate-50:hover { background:#1e293b !important; }
+    html.dark .hover\:bg-slate-100:hover { background:#334155 !important; }
+    html.dark .shadow-sm { box-shadow:0 1px 4px rgba(0,0,0,0.4) !important; }
+    html.dark input, html.dark select, html.dark textarea { background:#1e293b !important; color:#e2e8f0 !important; border-color:#334155 !important; }
+    html.dark .focus\:ring-amber-400:focus { --tw-ring-color:#f59e0b !important; }
+    html.dark #offline-bar { background:#78350f; }
+    </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
     <script>if (localStorage.getItem('darkMode') === '1') document.documentElement.classList.add('dark');</script>
@@ -44,10 +64,15 @@
         .dark div[style*="border-top:1px solid #e2e8f0"] { border-color:#334155 !important; }
         @media (max-width: 639px) {
             .nav-settings-text { display: none; }
+            .nav-metro-full { display: none; }
+            .nav-metro-icon { display: inline !important; }
             #nav-inner { gap: 0.15rem; padding-left: 0.35rem; padding-right: 0.35rem; }
             #nav-inner .nav-logo { height: 2rem; }
             #nav-inner a { padding-left: 6px !important; padding-right: 6px !important; }
             #nav-inner form button { padding-left: 4px !important; padding-right: 4px !important; }
+        }
+        @media (min-width: 640px) {
+            .nav-metro-icon { display: none; }
         }
     </style>
 </head>
@@ -68,6 +93,13 @@
                class="px-3 py-1.5 rounded text-sm font-medium transition-colors
                       {{ request()->routeIs('setlists.*') ? 'bg-amber-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700' }}">
                 Playlisty
+            </a>
+            <a href="{{ route('metronom') }}"
+               class="px-3 py-1.5 rounded text-sm font-medium transition-colors
+                      {{ request()->routeIs('metronom') ? 'bg-amber-500 text-slate-900' : 'text-slate-300 hover:bg-slate-700' }}"
+               title="Metronóm">
+                <span class="nav-metro-full">Metronóm</span>
+                <span class="nav-metro-icon" style="display:none;font-size:1.1rem;line-height:1">♩</span>
             </a>
         </div>
         @if(auth()->user()->isAdmin())

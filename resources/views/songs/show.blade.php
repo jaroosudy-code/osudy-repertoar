@@ -196,6 +196,12 @@
         @if($song->author_music)
             <span>Hudba: {{ $song->author_music }}</span>
         @endif
+        @if($song->bpm)
+            <button onclick="openMModal({{ $song->bpm }}, {{ json_encode($song->name) }})"
+                    class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors font-mono font-medium text-xs cursor-pointer border-0">
+                ♩ {{ $song->bpm }} BPM
+            </button>
+        @endif
     </div>
 
     @if($song->lyrics)
@@ -599,4 +605,6 @@ function saveChord(scope) {
 }
 </script>
 @endif
+
+@include('partials._metronom_modal')
 @endsection

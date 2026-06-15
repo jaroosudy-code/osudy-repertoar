@@ -85,7 +85,14 @@
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">Pomalá</span>
                         @endif
                     </td>
-                    <td class="col-desktop px-4 py-3 text-slate-600 dark:text-slate-400 font-mono">{{ $song->bpm ?? '' }}</td>
+                    <td class="col-desktop px-4 py-3 font-mono">
+                        @if($song->bpm)
+                        <button onclick="openMModal({{ $song->bpm }}, {{ json_encode($song->name) }})"
+                                class="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 hover:underline transition-colors cursor-pointer font-mono">
+                            {{ $song->bpm }}
+                        </button>
+                        @endif
+                    </td>
                     <td class="col-desktop px-4 py-3">
                         @if($song->type === 'own')
                             <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Osudy</span>
@@ -172,4 +179,6 @@ document.querySelectorAll('.delete-song-form').forEach(function(form) {
     });
 });
 </script>
+
+@include('partials._metronom_modal')
 @endsection

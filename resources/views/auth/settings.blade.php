@@ -115,6 +115,26 @@
 
 </div>
 <script>
+// Dark mode toggle
+(function() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const toggle = document.getElementById('dark-toggle');
+    const thumb  = document.getElementById('dark-thumb');
+    if (toggle && thumb) {
+        toggle.style.background = isDark ? '#f59e0b' : '#e2e8f0';
+        thumb.style.transform   = isDark ? 'translateX(1.45rem)' : 'translateX(0.2rem)';
+    }
+})();
+
+function toggleDarkMode() {
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('app_dark', isDark ? '1' : '0');
+    const toggle = document.getElementById('dark-toggle');
+    const thumb  = document.getElementById('dark-thumb');
+    toggle.style.background = isDark ? '#f59e0b' : '#e2e8f0';
+    thumb.style.transform   = isDark ? 'translateX(1.45rem)' : 'translateX(0.2rem)';
+}
+
 function togglePw(fieldId, btn) {
     const inp = document.getElementById(fieldId);
     const show = inp.type === 'password';

@@ -45,6 +45,8 @@ Route::middleware('auth')->group(function () {
         Route::get('export/csv', [ExportController::class, 'csv'])->name('setlists.export.csv');
     });
 
+    Route::get('metronom', fn() => view('metronom.index'))->name('metronom');
+
     Route::get('settings', [AuthController::class, 'showSettings'])->name('settings');
     Route::patch('settings/password', [AuthController::class, 'updatePassword'])->name('settings.password');
     Route::post('settings/invisible', [AuthController::class, 'toggleInvisible'])->name('settings.invisible');
