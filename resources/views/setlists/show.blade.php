@@ -479,12 +479,16 @@ const libSearch = document.getElementById('lib-search');
 const libTempo = document.getElementById('lib-tempo');
 const libType = document.getElementById('lib-type');
 
+function norm(str) {
+    return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
 function filterLibrary() {
-    const q = libSearch.value.toLowerCase();
+    const q = norm(libSearch.value);
     const tempo = libTempo.value;
     const type = libType.value;
     document.querySelectorAll('.library-song').forEach(el => {
-        const show = (!q || el.dataset.name.includes(q)) &&
+        const show = (!q || norm(el.dataset.name).includes(q)) &&
                      (!tempo || el.dataset.tempo === tempo) &&
                      (!type || el.dataset.type === type);
         el.style.display = show ? '' : 'none';

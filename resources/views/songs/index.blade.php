@@ -136,8 +136,12 @@ const filterTempo = document.getElementById('filter-tempo');
 const filterType = document.getElementById('filter-type');
 const countDisplay = document.getElementById('count-display');
 
+function norm(str) {
+    return str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
 function applyFilters() {
-    const q = search?.value.toLowerCase() ?? '';
+    const q = norm(search?.value ?? '');
     const tempo = filterTempo?.value ?? '';
     const type = filterType?.value ?? '';
     const rows = document.querySelectorAll('.song-row');
@@ -145,7 +149,7 @@ function applyFilters() {
 
     rows.forEach(row => {
         const match =
-            (!q || row.dataset.name.includes(q)) &&
+            (!q || norm(row.dataset.name).includes(q)) &&
             (!tempo || row.dataset.tempo === tempo) &&
             (!type || row.dataset.type === type);
         row.style.display = match ? '' : 'none';
