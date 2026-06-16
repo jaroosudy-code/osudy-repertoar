@@ -653,7 +653,6 @@ initLibraryMarkers();
         </div>
         <div id="proj-capo" style="display:flex;align-items:center;gap:10px;"></div>
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0;">
-            <span id="proj-next-title" style="display:none;background:#ea580c;color:#fff;padding:5px 16px;border-radius:20px;font-size:0.9rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-shadow:0 0 0 2px rgba(255,255,255,0.1);max-width:280px;"></span>
             <span id="proj-counter" style="font-size:0.7rem;color:rgba(255,255,255,0.2);font-family:monospace;flex-shrink:0;"></span>
             <button onclick="closeProjection()"
                     style="background:none;border:none;color:rgba(255,255,255,0.18);font-size:1rem;cursor:pointer;line-height:1;padding:4px 8px;border-radius:4px;flex-shrink:0;"
@@ -688,21 +687,18 @@ function projUpdateCapo(showNext) {
     if (cur.capo_j) {
         html += projCapoBadge(cur.capo_j, '#fff', '#16a34a');
     }
-    if (showNext && nxt && nxt.capo_j) {
-        html += '<span style="color:rgba(255,255,255,0.5);font-size:1.2rem;font-weight:300;">→</span>';
-        html += projCapoBadge(nxt.capo_j, '#1c1917', '#fbbf24');
+    if (showNext && nxt) {
+        if (nxt.capo_j) {
+            html += '<span style="color:rgba(255,255,255,0.4);font-size:1.2rem;font-weight:300;margin:0 2px;">→</span>';
+            html += projCapoBadge(nxt.capo_j, '#1c1917', '#fbbf24');
+        }
+        var safeName = nxt.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        html += '<span style="background:#fbbf24;color:#1c1917;padding:5px 16px;border-radius:20px;'
+              + 'font-size:1rem;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;'
+              + 'max-width:320px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;">'
+              + safeName + '</span>';
     }
     el.innerHTML = html;
-    // Názov ďalšej piesne
-    var nextTitleEl = document.getElementById('proj-next-title');
-    if (nextTitleEl) {
-        if (showNext && nxt) {
-            nextTitleEl.textContent = nxt.name;
-            nextTitleEl.style.display = 'inline-block';
-        } else {
-            nextTitleEl.style.display = 'none';
-        }
-    }
 }
 
 function openProjSettings() {
