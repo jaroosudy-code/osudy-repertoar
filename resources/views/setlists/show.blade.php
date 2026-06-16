@@ -671,6 +671,13 @@ let projSkipRefrain = localStorage.getItem('projSkipRefrain') === '1';
 let projShowLabels = localStorage.getItem('projShowLabels') !== '0';
 let projCapoTimer = null;
 
+function projCapoColor(capo) {
+    if (capo == 5) return { bg: '#dc2626', fg: '#fff' };
+    if (capo == 4) return { bg: '#2563eb', fg: '#fff' };
+    if (capo == 7) return { bg: '#7c3aed', fg: '#fff' };
+    return { bg: '#fbbf24', fg: '#1c1917' };
+}
+
 function projCapoBadge(num, color, bg) {
     return '<span style="display:inline-flex;align-items:center;justify-content:center;'
         + 'width:42px;height:42px;border-radius:50%;background:' + bg + ';'
@@ -688,12 +695,27 @@ function projUpdateCapo(showNext) {
         html += projCapoBadge(cur.capo_j, '#fff', '#16a34a');
     }
     if (showNext && nxt) {
-        if (nxt.capo_j) {
-            html += '<span style="color:rgba(255,255,255,0.4);font-size:1.2rem;font-weight:300;margin:0 2px;">→</span>';
-            html += projCapoBadge(nxt.capo_j, '#1c1917', '#fbbf24');
+        var curCapo = cur.capo_j || 0;
+        var nxtCapo = nxt.capo_j || 0;
+        var nameColor = { bg: '#16a34a', fg: '#fff' };
+        var arrow = '<span style="color:rgba(255,255,255,0.4);font-size:1.2rem;font-weight:300;margin:0 2px;">→</span>';
+        if (curCapo > 0 && nxtCapo === 0) {
+            // capo → bez capo: žltý krúžok ✕
+            nameColor = { bg: '#fbbf24', fg: '#1c1917' };
+            html += arrow + projCapoBadge('✕', '#1c1917', '#fbbf24');
+        } else if (nxtCapo > 0 && nxtCapo === curCapo) {
+            // rovnaké capo: zelené
+            nameColor = { bg: '#16a34a', fg: '#fff' };
+            html += arrow + projCapoBadge(nxtCapo, '#fff', '#16a34a');
+        } else if (nxtCapo > 0) {
+            // iné capo (alebo pridanie capo): farebné podľa pozície
+            var nxtColor = projCapoColor(nxtCapo);
+            nameColor = nxtColor;
+            html += arrow + projCapoBadge(nxtCapo, nxtColor.fg, nxtColor.bg);
         }
+        // bez capo → bez capo: žiadny krúžok, zelený názov (nameColor zostáva zelené)
         var safeName = nxt.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        html += '<span style="background:#fbbf24;color:#1c1917;padding:5px 16px;border-radius:20px;'
+        html += '<span style="background:' + nameColor.bg + ';color:' + nameColor.fg + ';padding:5px 16px;border-radius:20px;'
               + 'font-size:1.35rem;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;'
               + 'max-width:420px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;">'
               + safeName + '</span>';
