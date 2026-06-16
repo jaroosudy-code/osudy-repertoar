@@ -81,6 +81,16 @@
             </div>
             </div>{{-- /grid tempo+typ+bpm --}}
 
+            <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Kapodaster J (pražec)</label>
+                <div class="flex items-center gap-3">
+                    <input type="number" name="capo_j" value="{{ old('capo_j') }}" min="1" max="11"
+                           class="w-24 border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono"
+                           placeholder="—">
+                    <span class="text-xs text-slate-400 dark:text-slate-500">Nechaj prázdne ak bez kapodastra &nbsp;|&nbsp; 1–11</span>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Autor textu</label>

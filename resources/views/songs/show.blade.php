@@ -202,15 +202,28 @@
                 ♩ {{ $song->bpm }} BPM
             </button>
         @endif
+        @if($song->capo_j)
+            <span class="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-300 text-amber-700 font-mono font-bold text-xs">
+                CAPO J: {{ $song->capo_j }}
+            </span>
+        @endif
     </div>
 
     @if($song->lyrics)
     {{-- Transpozícia + toggle akordov --}}
-    <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-        <button id="btn-toggle-chords" onclick="toggleChords()"
-                style="padding:6px 16px; border-radius:20px; border:none; font-size:0.875rem; cursor:pointer; background:#e2e8f0; color:#334155; font-weight:500;">
-            ♩ Skryť akordy
-        </button>
+    <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button id="btn-toggle-chords" onclick="toggleChords()"
+                    style="padding:6px 16px; border-radius:20px; border:none; font-size:0.875rem; cursor:pointer; background:#e2e8f0; color:#334155; font-weight:500;">
+                ♩ Skryť akordy
+            </button>
+            @if($song->capo_j)
+            <button id="btn-capo" onclick="toggleCapo()"
+                    style="padding:6px 16px; border-radius:20px; border:1.5px solid #fcd34d; font-size:0.875rem; cursor:pointer; background:#fefce8; color:#92400e; font-weight:700;">
+                CAPO J
+            </button>
+            @endif
+        </div>
         <div id="transpozicia-row" style="display:flex; align-items:center; gap:12px;">
             <button onclick="transpose(-1)"
                     style="width:32px;height:32px;border-radius:50%;background:#e2e8f0;border:none;font-size:1.1rem;font-weight:bold;color:#334155;cursor:pointer;">−</button>
@@ -283,6 +296,8 @@ let currentOffset = 0;
 const rawLyrics = @json($song->lyrics ?? '');
 const SONG_ID = {{ $song->id }};
 const CAN_EDIT_CHORDS = {{ auth()->user()->hasPermission('chords.edit') ? 'true' : 'false' }};
+const CAPO_J = {{ $song->capo_j ?? 0 }};
+let capoMode = false;
 
 // ── Transpozícia ─────────────────────────────────────────────────────────────
 function transposeChord(chord, semitones) {
@@ -334,13 +349,44 @@ function renderLyrics(text, semitones) {
     }).join('');
 }
 
+function effectiveOffset() {
+    return currentOffset - (capoMode ? CAPO_J : 0);
+}
+
+function updateOffsetDisplay() {
+    const display = document.getElementById('offset-display');
+    if (capoMode && CAPO_J) {
+        const rel = currentOffset > 0 ? '+' + currentOffset : (currentOffset === 0 ? '' : String(currentOffset));
+        display.textContent = 'CAPO ' + CAPO_J + (rel ? ' ' + rel : '');
+    } else {
+        display.textContent = (currentOffset > 0 ? '+' : '') + currentOffset;
+    }
+}
+
 function transpose(delta) {
     currentOffset = currentOffset + delta;
     if (currentOffset > 11) currentOffset -= 12;
     if (currentOffset < -11) currentOffset += 12;
-    const display = document.getElementById('offset-display');
-    display.textContent = (currentOffset > 0 ? '+' : '') + currentOffset;
-    document.getElementById('lyrics-container').innerHTML = renderLyrics(rawLyrics, currentOffset);
+    updateOffsetDisplay();
+    document.getElementById('lyrics-container').innerHTML = renderLyrics(rawLyrics, effectiveOffset());
+}
+
+function toggleCapo() {
+    capoMode = !capoMode;
+    const btn = document.getElementById('btn-capo');
+    if (btn) {
+        if (capoMode) {
+            btn.style.background = '#fcd34d';
+            btn.style.color = '#78350f';
+            btn.style.borderColor = '#f59e0b';
+        } else {
+            btn.style.background = '#fefce8';
+            btn.style.color = '#92400e';
+            btn.style.borderColor = '#fcd34d';
+        }
+    }
+    updateOffsetDisplay();
+    document.getElementById('lyrics-container').innerHTML = renderLyrics(rawLyrics, effectiveOffset());
 }
 
 // ── Chord popup ───────────────────────────────────────────────────────────────

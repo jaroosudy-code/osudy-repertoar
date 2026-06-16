@@ -57,6 +57,7 @@
                     <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400 w-6"></th>
                     <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Názov</th>
                     <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">BPM</th>
+                    <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">CAPO J</th>
                     <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Čas</th>
                     <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Tempo</th>
                     <th class="text-left px-4 py-3 font-semibold text-slate-600 dark:text-slate-400">Typ</th>
@@ -82,6 +83,13 @@
                                 class="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 hover:underline transition-colors cursor-pointer font-mono">
                             {{ $song->bpm }}
                         </button>
+                        @endif
+                    </td>
+                    <td class="px-4 py-3 font-mono text-center">
+                        @if($song->capo_j)
+                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-xs font-bold">{{ $song->capo_j }}</span>
+                        @else
+                            <span class="text-slate-300 dark:text-slate-600">—</span>
                         @endif
                     </td>
                     <td class="px-4 py-3 text-slate-600 dark:text-slate-400 font-mono">{{ $song->duration_formatted }}</td>
