@@ -328,12 +328,18 @@ let capoMode = false;
 
 // ── Transpozícia ─────────────────────────────────────────────────────────────
 function transposeChord(chord, semitones) {
-    const m = chord.match(/^([A-H][#b]?)(.*)$/);
-    if (!m) return chord;
-    let idx = SCALE.indexOf(m[1]);
-    if (idx === -1) return chord;
+    if (semitones === 0) return chord;
+    // Najprv skús dvojznakový koreň (napr. F#, C#), potom jednoznakový
+    let idx, suffix;
+    if (chord.length >= 2 && (idx = SCALE.indexOf(chord.slice(0, 2))) !== -1) {
+        suffix = chord.slice(2);
+    } else if ((idx = SCALE.indexOf(chord.slice(0, 1))) !== -1) {
+        suffix = chord.slice(1);
+    } else {
+        return chord;
+    }
     idx = ((idx + semitones) % 12 + 12) % 12;
-    return SCALE[idx] + m[2];
+    return SCALE[idx] + suffix;
 }
 
 function processMarkers(text) {
