@@ -649,7 +649,7 @@ initLibraryMarkers();
 <div id="proj-screen" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;overflow:hidden;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;">
     <div style="position:sticky;top:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:6px 16px;gap:12px;z-index:1;">
         <div>
-            <span id="proj-title" style="display:inline-block;background:#16a34a;color:#fff;padding:5px 16px;border-radius:20px;font-size:0.9rem;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;box-shadow:0 0 0 2px rgba(255,255,255,0.1);"></span>
+            <span id="proj-title" style="display:inline-block;background:#16a34a;color:#fff;padding:5px 16px;border-radius:20px;font-size:1.35rem;font-weight:500;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;box-shadow:0 0 0 2px rgba(255,255,255,0.1);"></span>
         </div>
         <div id="proj-capo" style="display:flex;align-items:center;gap:10px;"></div>
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0;">
@@ -694,8 +694,8 @@ function projUpdateCapo(showNext) {
         }
         var safeName = nxt.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         html += '<span style="background:#fbbf24;color:#1c1917;padding:5px 16px;border-radius:20px;'
-              + 'font-size:1rem;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;'
-              + 'max-width:320px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;">'
+              + 'font-size:1.35rem;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;'
+              + 'max-width:420px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;">'
               + safeName + '</span>';
     }
     el.innerHTML = html;
