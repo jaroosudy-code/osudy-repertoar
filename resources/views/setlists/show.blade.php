@@ -647,13 +647,16 @@ initLibraryMarkers();
 }
 </style>
 <div id="proj-screen" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;overflow:hidden;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;">
-    <div style="position:sticky;top:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:9px 20px;z-index:1;">
-        <div id="proj-title" style="font-size:0.85rem;font-weight:500;color:rgba(255,255,255,0.35);letter-spacing:0.03em;"></div>
+    <div style="position:sticky;top:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:6px 16px;gap:12px;z-index:1;">
+        <div>
+            <span id="proj-title" style="display:inline-block;background:#16a34a;color:#fff;padding:5px 16px;border-radius:20px;font-size:0.9rem;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;box-shadow:0 0 0 2px rgba(255,255,255,0.1);"></span>
+        </div>
         <div id="proj-capo" style="display:flex;align-items:center;gap:10px;"></div>
-        <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;">
-            <span id="proj-counter" style="font-size:0.7rem;color:rgba(255,255,255,0.2);font-family:monospace;"></span>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0;">
+            <span id="proj-next-title" style="display:none;background:#ea580c;color:#fff;padding:5px 16px;border-radius:20px;font-size:0.9rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-shadow:0 0 0 2px rgba(255,255,255,0.1);max-width:280px;"></span>
+            <span id="proj-counter" style="font-size:0.7rem;color:rgba(255,255,255,0.2);font-family:monospace;flex-shrink:0;"></span>
             <button onclick="closeProjection()"
-                    style="background:none;border:none;color:rgba(255,255,255,0.18);font-size:1rem;cursor:pointer;line-height:1;padding:4px 8px;border-radius:4px;"
+                    style="background:none;border:none;color:rgba(255,255,255,0.18);font-size:1rem;cursor:pointer;line-height:1;padding:4px 8px;border-radius:4px;flex-shrink:0;"
                     onmouseover="this.style.color='rgba(255,255,255,0.6)'"
                     onmouseout="this.style.color='rgba(255,255,255,0.18)'">✕</button>
         </div>
@@ -690,6 +693,16 @@ function projUpdateCapo(showNext) {
         html += projCapoBadge(nxt.capo_j, '#1c1917', '#fbbf24');
     }
     el.innerHTML = html;
+    // Názov ďalšej piesne
+    var nextTitleEl = document.getElementById('proj-next-title');
+    if (nextTitleEl) {
+        if (showNext && nxt) {
+            nextTitleEl.textContent = nxt.name;
+            nextTitleEl.style.display = 'inline-block';
+        } else {
+            nextTitleEl.style.display = 'none';
+        }
+    }
 }
 
 function openProjSettings() {
@@ -901,10 +914,9 @@ function projRender() {
     document.getElementById('proj-counter').textContent = (projIndex + 1) + ' / ' + PROJ_SONGS.length;
     content.innerHTML = projBuildHTML(song);
     content.style.fontSize = prefFs + 'px';
-    // Capo: aktuálna pieseň ihneď (zelená), ďalšia po 60s (žltá)
+    // Capo + názov: aktuálna pieseň ihneď, ďalšia po 60s
     projUpdateCapo(false);
-    var nxt = PROJ_SONGS[projIndex + 1];
-    if (nxt && nxt.capo_j) {
+    if (PROJ_SONGS[projIndex + 1]) {
         projCapoTimer = setTimeout(function() { projUpdateCapo(true); }, 60000);
     }
     requestAnimationFrame(function() {
