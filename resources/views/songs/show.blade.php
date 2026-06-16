@@ -16,6 +16,25 @@
 .chord-span:hover { color: #f59e0b; }
 .chords-hidden .chord-span { display: none; }
 
+/* ── Toggle switches ─────────────────────────────────────── */
+.tog { position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
+.tog input { opacity:0; width:0; height:0; position:absolute; }
+.tog-track {
+    position:absolute; cursor:pointer; inset:0;
+    background:#cbd5e1; border-radius:26px;
+    transition:background .22s;
+}
+.tog-track:before {
+    content:''; position:absolute;
+    width:20px; height:20px; left:3px; top:3px;
+    background:#fff; border-radius:50%;
+    transition:transform .22s;
+    box-shadow:0 1px 3px rgba(0,0,0,.25);
+}
+.tog input:checked + .tog-track { background:#22c55e; }
+.tog input:checked + .tog-track:before { transform:translateX(20px); }
+.tog-capo input:checked + .tog-track { background:#f59e0b; }
+
 /* ── Chord popup ─────────────────────────────────────────── */
 #chord-overlay {
     display: none;
@@ -210,18 +229,26 @@
     </div>
 
     @if($song->lyrics)
-    {{-- Transpozícia + toggle akordov --}}
-    <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
-        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <button id="btn-toggle-chords" onclick="toggleChords()"
-                    style="padding:6px 16px; border-radius:20px; border:none; font-size:0.875rem; cursor:pointer; background:#e2e8f0; color:#334155; font-weight:500;">
-                ♩ Skryť akordy
-            </button>
+    {{-- Prepínače akordov + transpozícia --}}
+    <div class="no-print" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+            {{-- Akordy toggle --}}
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none;">
+                <span style="font-size:.875rem; color:#64748b; font-weight:500;">♩ Akordy</span>
+                <span class="tog">
+                    <input type="checkbox" id="chk-chords" onchange="toggleChords()">
+                    <span class="tog-track"></span>
+                </span>
+            </label>
             @if($song->capo_j)
-            <button id="btn-capo" onclick="toggleCapo()"
-                    style="padding:6px 16px; border-radius:20px; border:1.5px solid #fcd34d; font-size:0.875rem; cursor:pointer; background:#fefce8; color:#92400e; font-weight:700;">
-                CAPO J
-            </button>
+            {{-- CAPO J toggle --}}
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none;">
+                <span style="font-size:.875rem; font-weight:700; color:#92400e;">CAPO J</span>
+                <span class="tog tog-capo">
+                    <input type="checkbox" id="chk-capo" onchange="toggleCapo()">
+                    <span class="tog-track"></span>
+                </span>
+            </label>
             @endif
         </div>
         <div id="transpozicia-row" style="display:flex; align-items:center; gap:12px;">
@@ -372,19 +399,9 @@ function transpose(delta) {
 }
 
 function toggleCapo() {
-    capoMode = !capoMode;
-    const btn = document.getElementById('btn-capo');
-    if (btn) {
-        if (capoMode) {
-            btn.style.background = '#fcd34d';
-            btn.style.color = '#78350f';
-            btn.style.borderColor = '#f59e0b';
-        } else {
-            btn.style.background = '#fefce8';
-            btn.style.color = '#92400e';
-            btn.style.borderColor = '#fcd34d';
-        }
-    }
+    const chk = document.getElementById('chk-capo');
+    if (chk) capoMode = chk.checked;
+    else capoMode = !capoMode;
     updateOffsetDisplay();
     document.getElementById('lyrics-container').innerHTML = renderLyrics(rawLyrics, effectiveOffset());
 }
@@ -595,30 +612,23 @@ function detectBarre() {
 let chordsVisible = localStorage.getItem('chordsVisible') !== '0';
 
 function toggleChords() {
-    chordsVisible = !chordsVisible;
+    const chk = document.getElementById('chk-chords');
+    if (chk) chordsVisible = chk.checked;
+    else chordsVisible = !chordsVisible;
     localStorage.setItem('chordsVisible', chordsVisible ? '1' : '0');
     applyChordVisibility();
 }
 
 function applyChordVisibility() {
     const container = document.getElementById('lyrics-container');
-    const btn = document.getElementById('btn-toggle-chords');
+    const chk = document.getElementById('chk-chords');
     const transpRow = document.getElementById('transpozicia-row');
+    if (chk) chk.checked = chordsVisible;
     if (chordsVisible) {
         container.classList.remove('chords-hidden');
-        if (btn) {
-            btn.textContent = '♩ Skryť akordy';
-            btn.style.background = '#e2e8f0';
-            btn.style.color = '#334155';
-        }
         if (transpRow) transpRow.style.display = 'flex';
     } else {
         container.classList.add('chords-hidden');
-        if (btn) {
-            btn.textContent = '♩ Zobraziť akordy';
-            btn.style.background = '#dcfce7';
-            btn.style.color = '#15803d';
-        }
         if (transpRow) transpRow.style.display = 'none';
     }
 }
