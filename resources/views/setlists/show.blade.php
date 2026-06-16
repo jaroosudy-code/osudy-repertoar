@@ -10,13 +10,13 @@
     if ($isEntertainment) {
         foreach ($rounds as $round) {
             foreach ($round->setlistSongs as $e) {
-                $projectionSongs[] = ['name' => $e->song->name, 'lyrics' => $e->song->lyrics ?? ''];
+                $projectionSongs[] = ['name' => $e->song->name, 'lyrics' => $e->song->lyrics ?? '', 'capo_j' => $e->song->capo_j ?? null];
                 $playlistSongIds[] = $e->song_id;
             }
         }
     } else {
         foreach ($entries ?? [] as $e) {
-            $projectionSongs[] = ['name' => $e->song->name, 'lyrics' => $e->song->lyrics ?? ''];
+            $projectionSongs[] = ['name' => $e->song->name, 'lyrics' => $e->song->lyrics ?? '', 'capo_j' => $e->song->capo_j ?? null];
             $playlistSongIds[] = $e->song_id;
         }
     }
@@ -647,9 +647,10 @@ initLibraryMarkers();
 }
 </style>
 <div id="proj-screen" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;overflow:hidden;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;">
-    <div style="position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;padding:9px 20px;z-index:1;">
+    <div style="position:sticky;top:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:9px 20px;z-index:1;">
         <div id="proj-title" style="font-size:0.85rem;font-weight:500;color:rgba(255,255,255,0.35);letter-spacing:0.03em;"></div>
-        <div style="display:flex;align-items:center;gap:12px;">
+        <div id="proj-capo" style="font-family:monospace;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px;"></div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;">
             <span id="proj-counter" style="font-size:0.7rem;color:rgba(255,255,255,0.2);font-family:monospace;"></span>
             <button onclick="closeProjection()"
                     style="background:none;border:none;color:rgba(255,255,255,0.18);font-size:1rem;cursor:pointer;line-height:1;padding:4px 8px;border-radius:4px;"
@@ -666,6 +667,22 @@ let projIndex = 0;
 let projShowChords = localStorage.getItem('projChords') !== '0';
 let projSkipRefrain = localStorage.getItem('projSkipRefrain') === '1';
 let projShowLabels = localStorage.getItem('projShowLabels') !== '0';
+let projCapoTimer = null;
+
+function projUpdateCapo(showNext) {
+    var el = document.getElementById('proj-capo');
+    if (!el) return;
+    var cur = PROJ_SONGS[projIndex] || {};
+    var nxt = PROJ_SONGS[projIndex + 1] || null;
+    var html = '';
+    if (cur.capo_j) {
+        html += '<span style="color:#4ade80;letter-spacing:0.05em;">' + cur.capo_j + '</span>';
+    }
+    if (showNext && nxt && nxt.capo_j) {
+        html += '<span style="color:#fbbf24;letter-spacing:0.05em;">→' + nxt.capo_j + '</span>';
+    }
+    el.innerHTML = html;
+}
 
 function openProjSettings() {
     const savedFs = localStorage.getItem('projFontSize') || '26';
@@ -765,6 +782,7 @@ function startProjection() {
 }
 
 function closeProjection() {
+    if (projCapoTimer) { clearTimeout(projCapoTimer); projCapoTimer = null; }
     var screen = document.getElementById('proj-screen');
     screen.style.display = 'none';
     document.removeEventListener('keydown', projKeyHandler);
@@ -867,6 +885,7 @@ function projBuildHTML(song) {
 }
 
 function projRender() {
+    if (projCapoTimer) { clearTimeout(projCapoTimer); projCapoTimer = null; }
     var song = PROJ_SONGS[projIndex];
     var prefFs = parseInt(localStorage.getItem('projFontSize') || '26');
     var content = document.getElementById('proj-content');
@@ -874,6 +893,12 @@ function projRender() {
     document.getElementById('proj-counter').textContent = (projIndex + 1) + ' / ' + PROJ_SONGS.length;
     content.innerHTML = projBuildHTML(song);
     content.style.fontSize = prefFs + 'px';
+    // Capo: aktuálna pieseň ihneď (zelená), ďalšia po 60s (žltá)
+    projUpdateCapo(false);
+    var nxt = PROJ_SONGS[projIndex + 1];
+    if (nxt && nxt.capo_j) {
+        projCapoTimer = setTimeout(function() { projUpdateCapo(true); }, 60000);
+    }
     requestAnimationFrame(function() {
         var size = prefFs;
         while ((content.scrollWidth > content.clientWidth + 2) && size > 10) {
