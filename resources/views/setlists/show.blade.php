@@ -649,7 +649,7 @@ initLibraryMarkers();
 <div id="proj-screen" style="display:none;position:fixed;inset:0;background:#000;z-index:9999;overflow:hidden;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;">
     <div style="position:sticky;top:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:9px 20px;z-index:1;">
         <div id="proj-title" style="font-size:0.85rem;font-weight:500;color:rgba(255,255,255,0.35);letter-spacing:0.03em;"></div>
-        <div id="proj-capo" style="font-family:monospace;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px;"></div>
+        <div id="proj-capo" style="display:flex;align-items:center;gap:10px;"></div>
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;">
             <span id="proj-counter" style="font-size:0.7rem;color:rgba(255,255,255,0.2);font-family:monospace;"></span>
             <button onclick="closeProjection()"
@@ -669,6 +669,13 @@ let projSkipRefrain = localStorage.getItem('projSkipRefrain') === '1';
 let projShowLabels = localStorage.getItem('projShowLabels') !== '0';
 let projCapoTimer = null;
 
+function projCapoBadge(num, color, bg) {
+    return '<span style="display:inline-flex;align-items:center;justify-content:center;'
+        + 'width:42px;height:42px;border-radius:50%;background:' + bg + ';'
+        + 'color:' + color + ';font-family:monospace;font-size:1.35rem;font-weight:800;'
+        + 'box-shadow:0 0 0 3px rgba(255,255,255,0.15);">' + num + '</span>';
+}
+
 function projUpdateCapo(showNext) {
     var el = document.getElementById('proj-capo');
     if (!el) return;
@@ -676,10 +683,11 @@ function projUpdateCapo(showNext) {
     var nxt = PROJ_SONGS[projIndex + 1] || null;
     var html = '';
     if (cur.capo_j) {
-        html += '<span style="color:#4ade80;letter-spacing:0.05em;">' + cur.capo_j + '</span>';
+        html += projCapoBadge(cur.capo_j, '#fff', '#16a34a');
     }
     if (showNext && nxt && nxt.capo_j) {
-        html += '<span style="color:#fbbf24;letter-spacing:0.05em;">→' + nxt.capo_j + '</span>';
+        html += '<span style="color:rgba(255,255,255,0.5);font-size:1.2rem;font-weight:300;">→</span>';
+        html += projCapoBadge(nxt.capo_j, '#1c1917', '#fbbf24');
     }
     el.innerHTML = html;
 }
