@@ -329,12 +329,19 @@ let capoMode = false;
 // ── Transpozícia ─────────────────────────────────────────────────────────────
 function transposeChord(chord, semitones) {
     if (semitones === 0) return chord;
-    // Najprv skús dvojznakový koreň (napr. F#, C#), potom jednoznakový
+    // Normalizácia: ♯ (hudobný krížik U+266F a iné) → ASCII #, ♭ → b
+    let c = chord.replace(/[♯♭＃#]/g, function(ch) {
+        return ch === '♭' ? 'b' : '#';
+    });
+    // Akýkoľvek ne-ASCII znak na pozícii 1 považujeme za krížik
+    if (c.length >= 2 && c.charCodeAt(1) > 127) {
+        c = c[0] + '#' + c.slice(2);
+    }
     let idx, suffix;
-    if (chord.length >= 2 && (idx = SCALE.indexOf(chord.slice(0, 2))) !== -1) {
-        suffix = chord.slice(2);
-    } else if ((idx = SCALE.indexOf(chord.slice(0, 1))) !== -1) {
-        suffix = chord.slice(1);
+    if (c.length >= 2 && (idx = SCALE.indexOf(c.slice(0, 2))) !== -1) {
+        suffix = c.slice(2);
+    } else if ((idx = SCALE.indexOf(c.slice(0, 1))) !== -1) {
+        suffix = c.slice(1);
     } else {
         return chord;
     }
