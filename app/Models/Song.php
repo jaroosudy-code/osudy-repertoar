@@ -21,6 +21,13 @@ class Song extends Model
         $this->attributes['duration_seconds'] = (int)$m * 60 + (int)$s;
     }
 
+    public function bands()
+    {
+        return $this->belongsToMany(Band::class, 'band_song')
+            ->withPivot(['added_by_user_id'])
+            ->withTimestamps();
+    }
+
     public function setlistSongs()
     {
         return $this->hasMany(SetlistSong::class);

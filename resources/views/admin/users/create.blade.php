@@ -60,6 +60,46 @@
             @error('password')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
         </div>
 
+        {{-- Priradenie do kapely --}}
+        <div class="pt-2 border-t border-slate-100 dark:border-slate-700">
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Priradiť do kapely</p>
+            <div class="space-y-3">
+                @foreach($bands as $band)
+                <div class="border border-slate-200 dark:border-slate-700 rounded-lg p-4" x-data="{ checked: {{ old('band_ids') && in_array($band->id, (array)old('band_ids')) ? 'true' : 'false' }} }">
+                    <label class="flex items-center gap-3 cursor-pointer mb-2">
+                        <input type="checkbox" name="band_ids[]" value="{{ $band->id }}"
+                               x-model="checked"
+                               class="w-4 h-4 accent-amber-500">
+                        <span class="font-medium text-slate-800 dark:text-slate-200">{{ $band->name }}</span>
+                    </label>
+                    <div x-show="checked" class="ml-7 mt-2 space-y-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="band_admin[{{ $band->id }}]" value="1"
+                                   class="w-4 h-4 accent-amber-500">
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Admin kapely (všetky práva)</span>
+                        </label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+                            @foreach(\App\Models\Role::PERMISSION_GROUPS as $group => $perms)
+                            <div class="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3">
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ $group }}</p>
+                                <div class="space-y-1.5">
+                                    @foreach($perms as $perm)
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="band_permissions[{{ $band->id }}][]" value="{{ $perm }}"
+                                               class="w-4 h-4 accent-amber-500">
+                                        <span class="text-xs text-slate-700 dark:text-slate-300">{{ \App\Models\Role::PERMISSION_LABELS[$perm] }}</span>
+                                    </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
         <div class="flex gap-3 pt-2 border-t border-slate-100 dark:border-slate-700">
             <button type="submit"
                     class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm">

@@ -10,7 +10,11 @@ class SetlistController extends Controller
 {
     public function index()
     {
-        $setlists = Setlist::withCount('setlistSongs')->latest()->get();
+        $bandId = session('current_band_id');
+        $setlists = Setlist::withCount('setlistSongs')
+            ->where('band_id', $bandId)
+            ->latest()
+            ->get();
         return view('setlists.index', compact('setlists'));
     }
 
@@ -31,7 +35,10 @@ class SetlistController extends Controller
             'notes'      => 'nullable|string',
         ]);
 
-        $setlist = Setlist::create(array_merge($data, ['user_id' => auth()->id()]));
+        $setlist = Setlist::create(array_merge($data, [
+            'user_id' => auth()->id(),
+            'band_id' => session('current_band_id'),
+        ]));
 
         if ($setlist->event_type === 'entertainment') {
             $setlist->rounds()->create(['name' => 'Kolo 1', 'order_position' => 0]);
@@ -43,7 +50,10 @@ class SetlistController extends Controller
 
     public function show(Setlist $setlist)
     {
-        $allSongs = Song::orderBy('name')->get();
+        $bandId = session('current_band_id') ?? $setlist->band_id;
+        $allSongs = Song::whereHas('bands', fn($q) => $q->where('bands.id', $bandId))
+            ->orderBy('name')
+            ->get();
         $canEdit  = $setlist->canBeEditedBy(auth()->user());
 
         if ($setlist->event_type === 'entertainment') {

@@ -2,15 +2,104 @@
 @section('title', 'Piesne')
 
 @section('content')
-<div class="flex items-center justify-between mb-6">
+<div class="flex items-center justify-between mb-6 gap-3 flex-wrap">
     <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Piesne ({{ $songs->count() }})</h1>
-    @if(auth()->user()->hasPermission('songs.create'))
-    <a href="{{ route('songs.create') }}"
-       class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors text-sm">
-        + Pridať pieseň
-    </a>
-    @endif
+    <div class="flex gap-2 flex-wrap">
+        @if(auth()->user()->isAdmin() && isset($otherBandSongs) && $otherBandSongs->isNotEmpty())
+        <button onclick="openShareModal()"
+                class="border border-amber-400 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-medium px-4 py-2 rounded-lg transition-colors text-sm">
+            + Z inej kapely
+        </button>
+        @endif
+        @if(auth()->user()->hasPermission('songs.create'))
+        <a href="{{ route('songs.create') }}"
+           class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold px-4 py-2 rounded-lg transition-colors text-sm">
+            + Pridať pieseň
+        </a>
+        @endif
+    </div>
 </div>
+
+@if(auth()->user()->isAdmin() && isset($otherBandSongs) && $otherBandSongs->isNotEmpty())
+{{-- Modal: Pridať pieseň z inej kapely --}}
+<div id="share-modal" style="display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.55);padding:16px;align-items:center;justify-content:center;">
+    <div style="background:#1e293b;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.4);width:100%;max-width:520px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #334155;">
+            <span style="font-weight:600;color:#f1f5f9;font-size:15px;">Pridať pieseň z inej kapely</span>
+            <button onclick="closeShareModal()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:22px;line-height:1;padding:0 4px;">×</button>
+        </div>
+        <div style="padding:12px 16px;">
+            <input type="text" id="share-search" placeholder="Hľadať pieseň…"
+                   style="width:100%;box-sizing:border-box;border:1px solid #475569;border-radius:8px;padding:8px 12px;font-size:13px;background:#0f172a;color:#e2e8f0;outline:none;">
+        </div>
+        <form method="POST" action="{{ route('songs.attach-from-band') }}" id="share-form" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+            @csrf
+            <div id="share-list" style="overflow-y:auto;flex:1;padding:0 12px 8px;">
+                @foreach($otherBandSongs as $otherSong)
+                <label class="share-item" data-name="{{ strtolower($otherSong->name) }}"
+                       style="display:flex;align-items:center;gap:10px;border:1px solid #334155;border-radius:8px;padding:10px 12px;margin-bottom:6px;cursor:pointer;">
+                    <input type="checkbox" name="song_ids[]" value="{{ $otherSong->id }}"
+                           onchange="updateShareBtn()"
+                           style="width:16px;height:16px;accent-color:#f59e0b;flex-shrink:0;cursor:pointer;">
+                    <span style="width:10px;height:10px;border-radius:50%;flex-shrink:0;background:{{ $otherSong->color }}"></span>
+                    <span style="font-size:13px;font-weight:500;color:#f1f5f9;flex:1;">{{ $otherSong->name }}</span>
+                    <span style="font-size:11px;color:#64748b;">{{ $otherSong->source_band_name ?? '' }}</span>
+                </label>
+                @endforeach
+            </div>
+            <div style="padding:12px 16px;border-top:1px solid #334155;display:flex;align-items:center;gap:12px;">
+                <button type="submit" id="share-submit-btn" disabled
+                        style="background:#475569;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;color:#94a3b8;cursor:not-allowed;transition:all .15s;">
+                    Pridať označené
+                </button>
+                <span id="share-count" style="font-size:12px;color:#64748b;"></span>
+                <button type="button" onclick="shareSelectAll()"
+                        style="margin-left:auto;background:none;border:1px solid #475569;border-radius:6px;padding:6px 12px;font-size:12px;color:#94a3b8;cursor:pointer;">
+                    Vybrať všetky
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function openShareModal()  { var m=document.getElementById('share-modal'); m.style.display='flex'; document.getElementById('share-search').focus(); }
+function closeShareModal() { document.getElementById('share-modal').style.display='none'; }
+document.getElementById('share-modal').addEventListener('click', function(e) { if(e.target===this) closeShareModal(); });
+
+document.getElementById('share-search').addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    document.querySelectorAll('.share-item').forEach(function(el) {
+        el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+    });
+});
+
+function updateShareBtn() {
+    var checked = document.querySelectorAll('#share-form input[type=checkbox]:checked').length;
+    var btn = document.getElementById('share-submit-btn');
+    var cnt = document.getElementById('share-count');
+    if (checked > 0) {
+        btn.disabled = false;
+        btn.style.background = '#f59e0b';
+        btn.style.color = '#0f172a';
+        btn.style.cursor = 'pointer';
+        cnt.textContent = 'Označené: ' + checked;
+    } else {
+        btn.disabled = true;
+        btn.style.background = '#475569';
+        btn.style.color = '#94a3b8';
+        btn.style.cursor = 'not-allowed';
+        cnt.textContent = '';
+    }
+}
+
+function shareSelectAll() {
+    var visible = document.querySelectorAll('.share-item:not([style*="none"]) input[type=checkbox]');
+    var allChecked = Array.from(visible).every(function(cb) { return cb.checked; });
+    visible.forEach(function(cb) { cb.checked = !allChecked; });
+    updateShareBtn();
+}
+</script>
+@endif
 
 <style>
 @media (max-width: 639px) {

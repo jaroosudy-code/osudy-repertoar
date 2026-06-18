@@ -38,18 +38,22 @@ class ChordDiagramController extends Controller
         $attributes = collect($data)->except(['scope', 'song_id'])->toArray();
 
         if ($data['scope'] === 'song' && !empty($data['song_id'])) {
-            $chord = $this->findExact($data['name'], $data['song_id']);
+            $bandId = session('current_band_id');
+            $chord  = $this->findExact($data['name'], $data['song_id'], $bandId);
             if ($chord) {
                 $chord->update($attributes);
             } else {
-                $chord = ChordDiagram::create(array_merge($attributes, ['song_id' => $data['song_id']]));
+                $chord = ChordDiagram::create(array_merge($attributes, [
+                    'song_id' => $data['song_id'],
+                    'band_id' => $bandId,
+                ]));
             }
         } else {
-            $chord = $this->findExact($data['name'], null);
+            $chord = $this->findExact($data['name'], null, null);
             if ($chord) {
-                $chord->update($attributes + ['song_id' => null]);
+                $chord->update($attributes + ['song_id' => null, 'band_id' => null]);
             } else {
-                $chord = ChordDiagram::create(array_merge($attributes, ['song_id' => null]));
+                $chord = ChordDiagram::create(array_merge($attributes, ['song_id' => null, 'band_id' => null]));
             }
         }
 
@@ -60,32 +64,46 @@ class ChordDiagramController extends Controller
 
     private function find(string $name, ?string $songId): ?ChordDiagram
     {
+        $bandId = session('current_band_id');
+
         if ($songId) {
-            $chord = $this->findExact($name, (int) $songId);
+            // 1. Kapela + pieseň
+            $chord = $this->findExact($name, (int) $songId, $bandId);
             if ($chord) return $chord;
 
             $norm = $this->normalize($name);
             if ($norm !== $name) {
-                $chord = $this->findExact($norm, (int) $songId);
+                $chord = $this->findExact($norm, (int) $songId, $bandId);
+                if ($chord) return $chord;
+            }
+
+            // 2. Pôvodná (bez kapely) + pieseň
+            $chord = $this->findExact($name, (int) $songId, null);
+            if ($chord) return $chord;
+
+            if ($norm !== $name) {
+                $chord = $this->findExact($norm, (int) $songId, null);
                 if ($chord) return $chord;
             }
         }
 
-        $chord = $this->findExact($name, null);
+        // 3. Globálny (bez piesne, bez kapely)
+        $chord = $this->findExact($name, null, null);
         if ($chord) return $chord;
 
         $norm = $this->normalize($name);
         if ($norm !== $name) {
-            return $this->findExact($norm, null);
+            return $this->findExact($norm, null, null);
         }
 
         return null;
     }
 
-    private function findExact(string $name, ?int $songId): ?ChordDiagram
+    private function findExact(string $name, ?int $songId, ?int $bandId): ?ChordDiagram
     {
         $q = ChordDiagram::where('name', $name);
         $songId ? $q->where('song_id', $songId) : $q->whereNull('song_id');
+        $bandId ? $q->where('band_id', $bandId) : $q->whereNull('band_id');
         return $q->first();
     }
 

@@ -110,6 +110,33 @@
         @endif
 
         <div class="ml-auto flex gap-1 items-center">
+            {{-- Band switcher pre multi-kapelových používateľov --}}
+            @if(auth()->check())
+                @php $userBands = auth()->user()->bands()->get(); @endphp
+                @if($userBands->count() > 1 || auth()->user()->isAdmin())
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" @click.outside="open = false"
+                            class="flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium text-slate-300 hover:bg-slate-700 transition-colors">
+                        <span class="text-amber-400">🎸</span>
+                        <span class="hidden sm:inline max-w-24 truncate">{{ auth()->user()->currentBand()?->name ?? 'Kapela' }}</span>
+                        <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="open" x-cloak
+                         class="absolute right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 min-w-36 py-1">
+                        @foreach($userBands as $b)
+                        <form method="POST" action="{{ route('bands.switch', $b) }}">
+                            @csrf
+                            <button type="submit"
+                                    class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-amber-400 transition-colors {{ session('current_band_id') == $b->id ? 'text-amber-400 font-semibold' : '' }}">
+                                {{ $b->name }}
+                                @if(session('current_band_id') == $b->id) <span class="ml-1 text-xs">✓</span> @endif
+                            </button>
+                        </form>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+            @endif
             @if(auth()->user()->isAdmin())
             <a href="{{ route('admin.users.index') }}"
                class="px-3 py-1.5 rounded text-sm font-medium transition-colors

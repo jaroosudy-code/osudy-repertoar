@@ -42,6 +42,19 @@ class User extends Authenticatable
         return $this->hasMany(Setlist::class);
     }
 
+    public function bands()
+    {
+        return $this->belongsToMany(Band::class)
+            ->withPivot(['permissions', 'is_band_admin'])
+            ->withTimestamps();
+    }
+
+    public function currentBand(): ?Band
+    {
+        $id = session('current_band_id');
+        return $id ? $this->bands()->find($id) : null;
+    }
+
     public function isAdmin(): bool
     {
         return $this->role?->isAdmin() ?? false;
@@ -49,7 +62,20 @@ class User extends Authenticatable
 
     public function hasPermission(string $permission): bool
     {
-        return $this->role?->hasPermission($permission) ?? false;
+        if ($this->isAdmin()) return true;
+
+        $bandId = session('current_band_id');
+        if (! $bandId) return false;
+
+        $band = $this->bands()->find($bandId);
+        if (! $band) return false;
+        if ($band->pivot->is_band_admin) return true;
+
+        $perms = $band->pivot->permissions;
+        if (is_string($perms)) {
+            $perms = json_decode($perms, true) ?? [];
+        }
+        return in_array($permission, $perms ?? []);
     }
 
     public function isOnline(): bool

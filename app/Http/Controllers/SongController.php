@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Band;
 use App\Models\Song;
 use Illuminate\Http\Request;
 
@@ -9,8 +10,23 @@ class SongController extends Controller
 {
     public function index()
     {
-        $songs = Song::orderBy('name')->get();
-        return view('songs.index', compact('songs'));
+        $bandId = session('current_band_id');
+        $songs = Song::whereHas('bands', fn($q) => $q->where('bands.id', $bandId))
+            ->orderBy('name')
+            ->get();
+
+        $otherBandSongs = collect();
+        if (auth()->user()->isAdmin() && $bandId) {
+            $currentSongIds = $songs->pluck('id');
+            $otherBandSongs = Song::whereHas('bands', fn($q) => $q->where('bands.id', '!=', $bandId))
+                ->whereNotIn('id', $currentSongIds)
+                ->with(['bands' => fn($q) => $q->where('bands.id', '!=', $bandId)])
+                ->orderBy('name')
+                ->get()
+                ->each(fn($song) => $song->source_band_name = $song->bands->first()?->name);
+        }
+
+        return view('songs.index', compact('songs', 'otherBandSongs'));
     }
 
     public function create()
@@ -63,6 +79,11 @@ class SongController extends Controller
             'author_music'     => $data['author_music'] ?? null,
             'original_artist'  => $data['type'] === 'cover' ? ($data['original_artist'] ?? null) : null,
         ]);
+
+        $bandId = session('current_band_id');
+        if ($bandId) {
+            $song->bands()->attach($bandId, ['added_by_user_id' => auth()->id()]);
+        }
 
         return redirect()->route('songs.index')->with('success', 'Pieseň „' . $song->name . '" bola pridaná.');
     }
@@ -129,8 +150,41 @@ class SongController extends Controller
     public function destroy(Song $song)
     {
         abort_unless(auth()->user()->hasPermission('songs.delete'), 403, 'Nemáš oprávnenie mazať piesne.');
+
         $name = $song->name;
+        $bandId = session('current_band_id');
+
+        if ($song->bands()->count() > 1 && $bandId) {
+            $song->bands()->detach($bandId);
+            return redirect()->route('songs.index')
+                ->with('success', 'Pieseň „' . $name . '" bola odobratá z kapely.');
+        }
+
         $song->delete();
         return redirect()->route('songs.index')->with('success', 'Pieseň „' . $name . '" bola zmazaná.');
+    }
+
+    public function attachFromBand(Request $request)
+    {
+        abort_unless(auth()->user()->isAdmin(), 403);
+
+        $data = $request->validate([
+            'song_ids'   => 'required|array|min:1',
+            'song_ids.*' => 'exists:songs,id',
+        ]);
+
+        $bandId = session('current_band_id');
+        abort_unless($bandId, 400);
+
+        $added = 0;
+        foreach ($data['song_ids'] as $songId) {
+            $song = Song::find($songId);
+            if ($song && ! $song->bands()->where('band_id', $bandId)->exists()) {
+                $song->bands()->attach($bandId, ['added_by_user_id' => auth()->id()]);
+                $added++;
+            }
+        }
+
+        return back()->with('success', 'Pridané piesne: ' . $added . '.');
     }
 }

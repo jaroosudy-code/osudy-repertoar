@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RequireRole::class,
         ]);
         $middleware->appendToGroup('web', \App\Http\Middleware\UpdateLastSeen::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\SetCurrentBand::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

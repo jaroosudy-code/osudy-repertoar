@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BandController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ChordDiagramController;
 use App\Http\Controllers\ColorController;
@@ -22,8 +23,13 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/', fn() => redirect()->route('songs.index'));
 
+    Route::get('select-band', [BandController::class, 'select'])->name('bands.select');
+    Route::get('no-band', [BandController::class, 'noBand'])->name('bands.no-band');
+    Route::post('switch-band/{band}', [BandController::class, 'switch'])->name('bands.switch');
+
     Route::resource('songs', SongController::class)->except(['show']);
     Route::get('songs/{song}', [SongController::class, 'show'])->name('songs.show');
+    Route::post('songs/attach-from-band', [SongController::class, 'attachFromBand'])->name('songs.attach-from-band');
 
     Route::get('colors', [ColorController::class, 'index'])->name('colors.index');
     Route::post('colors', [ColorController::class, 'store'])->name('colors.store');
@@ -82,5 +88,16 @@ Route::middleware('auth')->group(function () {
         Route::get('roles/{role}/edit', [AdminController::class, 'rolesEdit'])->name('roles.edit');
         Route::patch('roles/{role}',    [AdminController::class, 'rolesUpdate'])->name('roles.update');
         Route::delete('roles/{role}',   [AdminController::class, 'rolesDestroy'])->name('roles.destroy');
+
+        // Správa kapiel
+        Route::get('bands',                                           [AdminController::class, 'bandsIndex'])->name('bands.index');
+        Route::get('bands/create',                                    [AdminController::class, 'bandsCreate'])->name('bands.create');
+        Route::post('bands',                                          [AdminController::class, 'bandsStore'])->name('bands.store');
+        Route::get('bands/{band}/edit',                              [AdminController::class, 'bandsEdit'])->name('bands.edit');
+        Route::patch('bands/{band}',                                  [AdminController::class, 'bandsUpdate'])->name('bands.update');
+        Route::delete('bands/{band}',                                 [AdminController::class, 'bandsDestroy'])->name('bands.destroy');
+        Route::post('bands/{band}/users',                             [AdminController::class, 'bandsAttachUser'])->name('bands.attach-user');
+        Route::delete('bands/{band}/users/{user}',                    [AdminController::class, 'bandsDetachUser'])->name('bands.detach-user');
+        Route::patch('bands/{band}/users/{user}/permissions',         [AdminController::class, 'bandsUpdateUserPermissions'])->name('bands.update-user-permissions');
     });
 });

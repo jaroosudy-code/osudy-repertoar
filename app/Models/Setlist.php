@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Setlist extends Model
 {
-    protected $fillable = ['name', 'event_type', 'event_date', 'notes', 'user_id'];
+    protected $fillable = ['name', 'event_type', 'event_date', 'notes', 'user_id', 'band_id'];
 
     protected $casts = ['event_date' => 'date'];
 
@@ -28,6 +28,11 @@ class Setlist extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function band()
+    {
+        return $this->belongsTo(Band::class);
     }
 
     public function canBeEditedBy(User $user): bool
