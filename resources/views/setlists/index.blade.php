@@ -37,7 +37,21 @@
                     {{ $setlist->event_type === 'concert' ? '🎤 Koncert' : '🎉 Zábava' }}
                 </span>
             </div>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ $setlist->setlist_songs_count }} piesní</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-1">{{ $setlist->setlist_songs_count }} piesní</p>
+            @php
+                $sec = $setlist->total_duration ?? 0;
+                $h = intdiv($sec, 3600);
+                $m = intdiv($sec % 3600, 60);
+                $s = $sec % 60;
+                $durFormatted = $h > 0
+                    ? sprintf('%d:%02d:%02d', $h, $m, $s)
+                    : sprintf('%d:%02d', $m, $s);
+            @endphp
+            @if($sec > 0)
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">⏱ {{ $durFormatted }}</p>
+            @else
+            <p class="mb-4"></p>
+            @endif
             <div class="flex gap-2">
                 <a href="{{ route('setlists.show', $setlist) }}"
                    class="flex-1 text-center bg-amber-500 hover:bg-amber-600 text-slate-900 font-medium py-1.5 rounded-lg text-sm transition-colors">
@@ -48,6 +62,14 @@
                    onmouseover="this.style.background='#15803d'"
                    onmouseout="this.style.background='#16a34a'"
                    title="Export CSV"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>CSV</a>
+                @if(auth()->user()->hasPermission('setlists.create'))
+                <form method="POST" action="{{ route('setlists.duplicate', $setlist) }}" class="inline">
+                    @csrf
+                    <button type="submit"
+                            class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-amber-50 dark:hover:bg-amber-950 hover:text-amber-600 hover:border-amber-300 text-sm transition-colors"
+                            title="Duplikovať">⧉</button>
+                </form>
+                @endif
                 @if($setlist->canBeDeletedBy(auth()->user()))
                 <form method="POST" action="{{ route('setlists.destroy', $setlist) }}" class="inline delete-confirm-form" data-name="{{ $setlist->name }}">
                     @csrf @method('DELETE')

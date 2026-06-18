@@ -35,7 +35,6 @@
     </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-    <script>if (localStorage.getItem('darkMode') === '1') document.documentElement.classList.add('dark');</script>
     <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
     // Stránka sa sama uloží do cache pri každom načítaní online
@@ -122,7 +121,7 @@
                         <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <div x-show="open" x-cloak
-                         class="absolute right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 min-w-36 py-1">
+                         class="absolute right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl min-w-36 py-1" style="z-index:9999">
                         @foreach($userBands as $b)
                         <form method="POST" action="{{ route('bands.switch', $b) }}">
                             @csrf

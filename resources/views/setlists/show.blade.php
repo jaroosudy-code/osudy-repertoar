@@ -115,7 +115,7 @@
 
         @if($isEntertainment)
             {{-- Grand total bar --}}
-            <div class="bg-slate-800 text-white rounded-xl px-4 py-2.5 flex items-center justify-between sticky top-0 z-10 shadow">
+            <div class="bg-slate-800 text-white rounded-xl px-4 py-2.5 flex items-center justify-between sticky top-0 z-[1] shadow">
                 <span class="text-sm font-medium">Celkový čas hudby:</span>
                 <span id="grand-total-music" class="font-mono font-bold text-amber-400 text-lg">0:00:00</span>
                 <span class="text-slate-400 text-sm mx-2">|</span>
@@ -196,7 +196,7 @@
 
         @else
             {{-- CONCERT: single flat list --}}
-            <div class="bg-slate-800 text-white rounded-xl px-4 py-2.5 flex items-center justify-between sticky top-0 z-10 shadow">
+            <div class="bg-slate-800 text-white rounded-xl px-4 py-2.5 flex items-center justify-between sticky top-0 z-[1] shadow">
                 <span class="text-sm font-medium">Celkový čas:</span>
                 <span id="grand-total-music" class="font-mono font-bold text-amber-400 text-lg">0:00:00</span>
             </div>
@@ -344,6 +344,11 @@ function initDropZone(zone) {
         delay: 200,
         delayOnTouchOnly: true,
         touchStartThreshold: 5,
+        scroll: true,
+        scrollSensitivity: 100,
+        scrollSpeed: 12,
+        bubbleScroll: true,
+        forceAutoScrollFallback: true,
         onAdd(evt) {
             const libSong = evt.item;
             const songId = libSong.dataset.songId;

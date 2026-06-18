@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('setlists', SetlistController::class)->except(['show']);
     Route::get('setlists/{setlist}', [SetlistController::class, 'show'])->name('setlists.show');
+    Route::post('setlists/{setlist}/duplicate', [SetlistController::class, 'duplicate'])->name('setlists.duplicate');
 
     Route::prefix('setlists/{setlist}')->group(function () {
         Route::post('rounds', [RoundController::class, 'store'])->name('rounds.store');

@@ -129,6 +129,7 @@
 function toggleDarkMode() {
     const isDark = document.documentElement.classList.toggle('dark');
     localStorage.setItem('app_dark', isDark ? '1' : '0');
+    localStorage.removeItem('darkMode');
     const toggle = document.getElementById('dark-toggle');
     const thumb  = document.getElementById('dark-thumb');
     toggle.style.background = isDark ? '#f59e0b' : '#e2e8f0';
@@ -141,10 +142,6 @@ function togglePw(fieldId, btn) {
     inp.type = show ? 'text' : 'password';
     btn.querySelectorAll('.eye-open').forEach(el => el.style.display = show ? 'none' : '');
     btn.querySelectorAll('.eye-shut').forEach(el => el.style.display = show ? '' : 'none');
-}
-function toggleDarkMode() {
-    const isDark = document.documentElement.classList.toggle('dark');
-    localStorage.setItem('darkMode', isDark ? '1' : '0');
 }
 </script>
 @endsection

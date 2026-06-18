@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setlist;
+use App\Models\SetlistSong;
 use App\Models\Song;
 use Illuminate\Http\Request;
 
@@ -12,10 +13,55 @@ class SetlistController extends Controller
     {
         $bandId = session('current_band_id');
         $setlists = Setlist::withCount('setlistSongs')
+            ->addSelect([
+                'total_duration' => SetlistSong::selectRaw('COALESCE(SUM(songs.duration_seconds), 0)')
+                    ->join('songs', 'setlist_songs.song_id', '=', 'songs.id')
+                    ->whereColumn('setlist_songs.setlist_id', 'setlists.id'),
+            ])
             ->where('band_id', $bandId)
             ->latest()
             ->get();
         return view('setlists.index', compact('setlists'));
+    }
+
+    public function duplicate(Setlist $setlist)
+    {
+        abort_unless(auth()->user()->hasPermission('setlists.create'), 403);
+
+        $copy = Setlist::create([
+            'name'       => $setlist->name . ' – kópia',
+            'event_type' => $setlist->event_type,
+            'event_date' => $setlist->event_date,
+            'notes'      => $setlist->notes,
+            'user_id'    => auth()->id(),
+            'band_id'    => $setlist->band_id,
+        ]);
+
+        if ($setlist->event_type === 'entertainment') {
+            foreach ($setlist->rounds()->with('setlistSongs')->get() as $round) {
+                $newRound = $copy->rounds()->create([
+                    'name'           => $round->name,
+                    'order_position' => $round->order_position,
+                ]);
+                foreach ($round->setlistSongs as $entry) {
+                    $copy->setlistSongs()->create([
+                        'round_id'       => $newRound->id,
+                        'song_id'        => $entry->song_id,
+                        'order_position' => $entry->order_position,
+                    ]);
+                }
+            }
+        } else {
+            foreach ($setlist->concertSongs as $entry) {
+                $copy->setlistSongs()->create([
+                    'song_id'        => $entry->song_id,
+                    'order_position' => $entry->order_position,
+                ]);
+            }
+        }
+
+        return redirect()->route('setlists.show', $copy)
+            ->with('success', 'Playlist bol skopírovaný.');
     }
 
     public function create()
